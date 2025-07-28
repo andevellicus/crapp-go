@@ -1,0 +1,36 @@
+/* assets/css/input.css */
+@import "tailwindcss";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.main-header {
+  /* A clean, white background with a subtle bottom border instead of a shadow */
+  @apply bg-white p-4 border-b border-gray-200;
+}
+
+.main-footer {
+  @apply bg-gray-800 text-white p-4 text-center mt-auto;
+}
+
+.nav-button {
+  @apply px-4 py-2 rounded-md font-medium border border-sky-700 text-sky-700 hover:bg-blue-50;
+}
+
+.green-button {
+	@apply px-6 py-3 bg-emerald-500 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-md transition duration-300;
+}
+
+.red-button {
+  @apply px-6 py-3 bg-red-700 hover:bg-red-900 text-white font-semibold rounded-lg shadow-md transition duration-300;
+}
+
+.site-title {
+  /* Ensure the title is dark and readable on the new white background */
+  @apply text-2xl font-bold text-gray-800;
+}
+
+.text-default {
+  @apply text-lg text-gray-700 text-lg;
+}

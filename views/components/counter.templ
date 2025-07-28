@@ -1,0 +1,28 @@
+package components
+
+import "strconv"
+
+templ Counter(count int) {
+	<div id="counter-component" class="p-6 bg-white rounded-lg shadow-md text-center">
+		<h2 class="text-3xl font-bold text-sky-700 mb-4">Counter Example</h2>
+		<p class="text-5xl font-extrabold text-green-600 mb-6">{ strconv.Itoa(count) }</p>
+		<div class="flex justify-center space-x-4">
+			<button
+				hx-post="/increment"
+				hx-target="#counter-component"
+				hx-swap="outerHTML"
+				class="green-button"
+			>
+				Increment
+			</button>
+			<button
+				hx-post="/decrement"
+				hx-target="#counter-component"
+				hx-swap="outerHTML"
+				class="red-button"
+			>
+				Decrement
+			</button>
+		</div>
+	</div>
+}

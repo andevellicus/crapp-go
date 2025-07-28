@@ -1,0 +1,29 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "prelaunch-build",
+			"dependsOn": [
+				"templ:generate",
+				"build:css"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "build:css",
+			"type": "shell",
+			"command": "tailwindcss -i ./assets/css/input.css -o ./assets/css/style.css",
+			"problemMatcher": []
+		},
+		{
+			"label": "templ:generate",
+			"type": "shell",
+			"command": "go tool templ generate",
+			"problemMatcher": []
+		}
+	]
+}

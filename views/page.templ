@@ -1,0 +1,9 @@
+package views
+
+// This component composes the Layout and Home components.
+templ Page(title string) {
+	// The Layout component is called, and the Home component is passed as a child.
+	@Layout(title) {
+		@Home()
+	}
+}

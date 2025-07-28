@@ -1,0 +1,7 @@
+# Templ generated files
+*_templ.go
+
+__debug_bin*
+
+# Generated CSS
+/assets/css/style.css

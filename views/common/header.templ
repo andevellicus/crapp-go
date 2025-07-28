@@ -1,0 +1,13 @@
+package common
+
+templ Header() {
+	<header class="main-header">
+		<nav class="container mx-auto flex justify-between items-center">
+			<a href="/" class="site-title">Go/HTMX SPA</a>
+			<div>
+				<button hx-get="/home" hx-target="#content" hx-swap="innerHTML" class="nav-button">Home</button>
+				<button hx-get="/counter" hx-target="#content" hx-swap="innerHTML" class="nav-button">Counter</button>
+			</div>
+		</nav>
+	</header>
+}
