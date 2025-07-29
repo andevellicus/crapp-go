@@ -7,13 +7,25 @@
 
 .main-header {
   /* A clean, white background with a subtle bottom border instead of a shadow */
-  @apply bg-white p-4 border-b border-gray-200;
+  @apply bg-white p-4 border-b border-gray-200 text-center;
+}
+
+.header-main h1 {
+	@apply text-5xl font-extrabold tracking-wider uppercase;
+}
+
+.header-main h2 {
+	@apply text-xl font-light text-gray-300 mt-2;
 }
 
 .main-footer {
   @apply bg-gray-800 text-white p-4 text-center mt-auto;
 }
 
+.nav-bar {
+	/* Dark container for the nav, with a top border as a separator */
+	@apply bg-gray-800 border-t border-gray-700;
+}
 .nav-button {
   @apply px-4 py-2 rounded-md font-medium border border-sky-700 text-sky-700 hover:bg-blue-50;
 }

@@ -34,11 +34,11 @@ func main() {
 	})
 
 	// HTMX endpoint for the home content only
-	router.GET("/home", func(c *gin.Context) {
-		err := views.Home().Render(c.Request.Context(), c.Writer)
+	router.GET("/login", func(c *gin.Context) {
+		err := views.Login().Render(c.Request.Context(), c.Writer)
 		if err != nil {
-			log.Printf("Error rendering home component: %v", err)
-			c.String(http.StatusInternalServerError, "Error loading home content")
+			log.Printf("Error rendering login component: %v", err)
+			c.String(http.StatusInternalServerError, "Error loading login content")
 		}
 	})
 
