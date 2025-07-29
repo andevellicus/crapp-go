@@ -1,9 +1,7 @@
 package views
 
-// This component composes the Layout and Home components.
-templ Page(title string) {
-	// The Layout component is called, and the Home component is passed as a child.
-	@Layout(title) {
+templ Page(title string, isLoggedIn bool) {
+	@Layout(title, isLoggedIn) {
 		@Login()
 	}
 }

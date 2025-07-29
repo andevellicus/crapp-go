@@ -2,8 +2,8 @@
 @import "tailwindcss";
 
 @tailwind base;
-@tailwind components;
-@tailwind utilities;
+@tailwind components; 
+
 
 .main-header {
   /* A clean, white background with a subtle bottom border instead of a shadow */
@@ -44,5 +44,5 @@
 }
 
 .text-default {
-  @apply text-lg text-gray-700 text-lg;
+  @apply text-lg text-gray-700 ;
 }
