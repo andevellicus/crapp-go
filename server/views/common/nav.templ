@@ -1,15 +1,14 @@
-// views/common/nav.templ
 package common
 
 templ Nav(isLoggedIn bool) {
 	<nav class="nav-bar">
-		<div class="container mx-auto flex justify-end items-center">
+		<div class="container mx-auto flex justify-end items-center max-w-5xl">
 			<div class="flex items-center space-x-5 p-4">
 				if isLoggedIn {
-					<button hx-get="/assessment" hx-target="#content" hx-swap="outerHTML" class="nav-button">Assessment</button>
-					<button hx-post="/logout" hx-target="#content" hx-swap="innerHTML" class="nav-button">Logout</button>
+					<button hx-get="/assessment" hx-target="#content" hx-swap="innerHTML" class="secondary-button">Assessment</button>
+					<button hx-post="/logout" hx-target="#content" hx-swap="innerHTML" class="secondary-button">Logout</button>
 				} else {
-					<button hx-get="/login" hx-target="#content" hx-swap="outerHTML" class="nav-button">Login</button>
+					<button hx-get="/login" hx-target="#content" hx-swap="innerHTML" class="secondary-button">Login</button>
 				}
 			</div>
 		</div>

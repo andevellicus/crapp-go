@@ -1,37 +1,49 @@
-// views/assessment.templ
 package views
 
 import (
-    "crapp-go/internal/models" 
+    "crapp-go/internal/models"
     "strconv"
 )
 
-
 templ AssessmentPage(question models.Question, currentIndex, totalQuestions int) {
 	<div id="assessment-container" class="p-6 bg-white rounded-lg shadow-md">
-		<h2 class="text-2xl font-bold mb-2">{ question.Title }</h2>
-		<p class="text-gray-600 mb-4">{ question.Description }</p>
-		<form hx-post="/assessment/next" hx-target="#assessment-container" hx-swap="outerHTML">
-			<input type="hidden" name="questionId" value={ question.ID } />
-			if question.Type == "radio" {
-				for _, option := range question.Options {
-					<div class="mb-2">
-						<label class="inline-flex items-center">
-							<input type="radio" name="answer" value={ option.Value } class="form-radio" required?={question.Required}/>
-							<span class="ml-2">{ option.Label }</span>
-							if option.Description != "" {
-								<p class="text-sm text-gray-500 ml-6">{ option.Description }</p>
-							}
-						</label>
-					</div>
-				}
-			} else if question.Type == "text" {
-				<textarea name="answer" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder={ question.Placeholder } maxlength={ strconv.Itoa(question.MaxLength) }></textarea>
-			}
+		<form hx-post="/assessment/next" hx-target="main#content" hx-swap="innerHTML" id="symptom-form">
+			
+			<div class="progress-indicator">
+				Question { strconv.Itoa(currentIndex + 1) } of { strconv.Itoa(totalQuestions) }
+			</div>
 
-			<div class="mt-6 flex justify-between items-center">
-				<p class="text-sm text-gray-500">Question { strconv.Itoa(currentIndex + 1) } of { strconv.Itoa(totalQuestions) }</p>
-				<button type="submit" class="green-button">Next</button>
+			<div class="form-group" data-question-id={ question.ID }>
+				<input type="hidden" name="questionId" value={ question.ID }/>
+				<h3>{ question.Title }</h3>
+				<p>{ question.Description }</p>
+
+				if question.Type == "radio" {
+					<div class="symptom-scale">
+						for _, option := range question.Options {
+							<label class="option-label">
+								<input type="radio" name="answer" value={ option.Value } required?={ question.Required }/>
+								<div class="option-text">
+									<strong>{ option.Label }</strong>
+									if option.Description != "" {
+										<div>{ option.Description }</div>
+									}
+								</div>
+							</label>
+						}
+					</div>
+				} else if question.Type == "text" {
+					<textarea name="answer" class="text-input" placeholder={ question.Placeholder } maxlength={ strconv.Itoa(question.MaxLength) }></textarea>
+				}
+
+				<div class="navigation-buttons">
+					if currentIndex > 0 {
+						<button type="button" hx-post="/assessment/prev" hx-target="main#content" hx-swap="innerHTML" class="secondary-button">Previous</button>
+					} else {
+						<div></div>
+					}
+					<button type="submit" class="primary-button">Next</button>
+				</div>
 			</div>
 		</form>
 	</div>

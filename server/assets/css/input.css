@@ -6,12 +6,22 @@
   @apply bg-white p-4 border-b border-gray-200 text-center;
 }
 
+.site-title {
+  /* Ensure the title is dark and readable on the new white background */
+  @apply text-2xl font-bold text-gray-800;
+}
+
 .header-main h1 {
 	@apply text-5xl font-extrabold tracking-wider uppercase;
 }
 
 .header-main h2 {
-	@apply text-xl font-light text-gray-300 mt-2;
+	@apply text-xl font-light text-gray-500 mt-2;
+}
+
+
+.text-default {
+  @apply text-lg text-gray-700 ;
 }
 
 .main-footer {
@@ -22,23 +32,64 @@
 	/* Dark container for the nav, with a top border as a separator */
 	@apply bg-gray-800 border-t border-gray-700;
 }
-.nav-button {
-  @apply px-4 py-2 rounded-md font-medium border border-sky-700 text-sky-700 hover:bg-blue-50;
+
+.primary-button {
+  @apply px-4 py-2 bg-sky-700 hover:bg-sky-900 text-white rounded-md font-medium transition duration-300;
+}
+
+.secondary-button {
+  @apply px-4 py-2 border border-sky-700 text-sky-700 hover:bg-blue-50 rounded-md font-medium transition duration-300;
 }
 
 .green-button {
-	@apply px-6 py-3 bg-emerald-500 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-md transition duration-300;
+	@apply px-4 py-2 bg-emerald-500 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-md transition duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-400;
 }
 
 .red-button {
-  @apply px-6 py-3 bg-red-700 hover:bg-red-900 text-white font-semibold rounded-lg shadow-md transition duration-300;
+  @apply px-4 py-2 bg-red-700 hover:bg-red-900 text-white font-semibold rounded-lg shadow-md transition duration-300;
 }
 
-.site-title {
-  /* Ensure the title is dark and readable on the new white background */
-  @apply text-2xl font-bold text-gray-800;
+/* New styles for the assessment form */
+.progress-indicator {
+    @apply text-sm text-gray-500 mb-4 text-center;
 }
 
-.text-default {
-  @apply text-lg text-gray-700 ;
+.form-group h3 {
+    @apply text-2xl font-bold mb-1;
+}
+
+.form-group p {
+    @apply text-gray-600 mb-4;
+}
+
+.symptom-scale {
+    @apply flex flex-col space-y-2;
+}
+
+.option-label {
+    @apply flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors;
+}
+
+.option-label input[type="radio"] {
+    @apply h-5 w-5 text-sky-600 focus:ring-sky-500 border-gray-300;
+}
+
+.option-text {
+    @apply ml-4;
+}
+
+.option-text strong {
+    @apply block font-semibold text-gray-800;
+}
+
+.option-text div {
+    @apply text-sm text-gray-500;
+}
+
+.text-input {
+    @apply shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-sky-500;
+}
+
+.navigation-buttons {
+    @apply flex justify-between mt-6 p-4 bg-gray-50 rounded-lg;
 }
