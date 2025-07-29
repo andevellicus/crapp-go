@@ -16,14 +16,14 @@
 		{
 			"label": "build:css",
 			"type": "shell",
-			"command": "tailwindcss -i ./assets/css/input.css -o ./assets/css/style.css",
+			"command": "tailwindcss -i ./server/assets/css/input.css -o ./server/assets/css/style.css",
 			"problemMatcher": []
 		},
 		{
 			"label": "templ:generate",
 			"type": "shell",
-			"command": "go tool templ generate",
+			"command": "templ generate",
 			"problemMatcher": []
-		}
+		},
 	]
 }

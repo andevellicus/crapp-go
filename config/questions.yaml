@@ -1,0 +1,141 @@
+# questions.yaml - Define symptom questions for CRAPP
+# This file defines all symptom questions, their type, and possible answers
+
+# Questions definitions
+questions:
+  - id: headache
+    title: Headache
+    description: Head pressure, eye pressure, base of head pain
+    metric_key: headache  # Corresponds to the database field
+    type: radio
+    metrics_type: mouse
+    required: true
+    options:
+      - value: 0
+        label: SYMPTOMS WERE NOT PRESENT OR RARELY PRESENT
+        description: No noticeable symptoms
+      - value: 1
+        label: MILD SYMPTOMS PRESENT
+        description: Interfered slightly with activities of daily living but still able to function at high level
+      - value: 2
+        label: MODERATE SYMPTOMS PRESENT
+        description: Interfered with ability to work or carry out normal ADLs, but still able to function somewhat most of the day
+      - value: 3
+        label: SEVERE OR DEBILITATING SYMPTOMS PRESENT
+        description: Interfered with ability to function/work all day
+
+  - id: cognitive
+    title: Cognitive Dysfunction
+    description: Brain fog, poor memory, difficulty thinking, word finding difficulty
+    metric_key: cognitive
+    type: radio
+    metrics_type: mouse
+    required: true
+    options:
+      - value: 0
+        label: SYMPTOMS WERE NOT PRESENT OR RARELY PRESENT
+        description: No noticeable symptoms
+      - value: 1
+        label: MILD SYMPTOMS PRESENT
+        description: Interfered slightly with activities of daily living but still able to function at high level
+      - value: 2
+        label: MODERATE SYMPTOMS PRESENT
+        description: Interfered with ability to work or carry out normal ADLs, but still able to function somewhat most of the day
+      - value: 3
+        label: SEVERE OR DEBILITATING SYMPTOMS PRESENT
+        description: Interfered with ability to function/work all day
+
+  - id: tinnitus
+    title: Tinnitus
+    description: Sound in the ear, includes whooshing, high pitched ring
+    metric_key: tinnitus
+    type: radio
+    metrics_type: mouse
+    required: true
+    options:
+      - value: 0
+        label: SYMPTOMS WERE NOT PRESENT OR RARELY PRESENT
+        description: No noticeable symptoms
+      - value: 1
+        label: MILD SYMPTOMS PRESENT
+        description: Interfered slightly with activities of daily living but still able to function at high level
+      - value: 2
+        label: MODERATE SYMPTOMS PRESENT
+        description: Interfered with ability to work or carry out normal ADLs, but still able to function somewhat most of the day
+      - value: 3
+        label: SEVERE OR DEBILITATING SYMPTOMS PRESENT
+        description: Interfered with ability to function/work all day
+
+  - id: dizziness
+    title: Dizziness
+    description: Balance difficulties, vertigo, disequilibrium
+    metric_key: dizziness
+    type: radio
+    metrics_type: mouse
+    required: true
+    options:
+      - value: 0
+        label: SYMPTOMS WERE NOT PRESENT OR RARELY PRESENT
+        description: No noticeable symptoms
+      - value: 1
+        label: MILD SYMPTOMS PRESENT
+        description: Interfered slightly with activities of daily living but still able to function at high level
+      - value: 2
+        label: MODERATE SYMPTOMS PRESENT
+        description: Interfered with ability to work or carry out normal ADLs, but still able to function somewhat most of the day
+      - value: 3
+        label: SEVERE OR DEBILITATING SYMPTOMS PRESENT
+        description: Interfered with ability to function/work all day
+
+  - id: visual
+    title: Visual Symptoms
+    description: Blurry or cloudy vision, visual spotting, loss of vision
+    metric_key: visual
+    type: radio
+    metrics_type: mouse
+    required: true
+    options:
+      - value: 0
+        label: SYMPTOMS WERE NOT PRESENT OR RARELY PRESENT
+        description: No noticeable symptoms
+      - value: 1
+        label: MILD SYMPTOMS PRESENT
+        description: Interfered slightly with activities of daily living but still able to function at high level
+      - value: 2
+        label: MODERATE SYMPTOMS PRESENT
+        description: Interfered with ability to work or carry out normal ADLs, but still able to function somewhat most of the day
+      - value: 3
+        label: SEVERE OR DEBILITATING SYMPTOMS PRESENT
+        description: Interfered with ability to function/work all day
+
+  - id: medication_changes
+    title: Medication Changes or New Therapies
+    description: Any medication changes or new therapies today?
+    metric_key: medication
+    type: radio 
+    metrics_type: mouse
+    required: false
+    default_option: 0 # Corresponds to the value, NOT the label
+    options:
+      - value: 0
+        label: No changes
+      - value: 1
+        label: Medication change
+      - value: 2
+        label: Physical therapy
+      - value: 3
+        label: Chiropractor
+      - value: 4
+        label: Botox
+      - value: 5
+        label: Other
+
+  - id: emotional_events
+    title: Emotional or Traumatic Events
+    description: Any significant traumatic or emotional events happen today?
+    metric_key: emotional
+    type: text
+    metrics_type: keyboard
+    required: false
+    placeholder: Describe any significant events (optional)
+    max_length: 500

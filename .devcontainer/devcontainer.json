@@ -1,0 +1,22 @@
+// .devcontainer/devcontainer.json
+{
+  "name": "CRAPP Go Development",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "remoteUser": "vscode",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "a-h.templ",
+        "ms-azuretools.vscode-docker"
+      ],
+      "settings": {
+        "go.useLanguageServer": true
+      }
+    }
+  },
+  "forwardPorts": [8080, 5431],
+  "postCreateCommand": "cd server && go mod download && go install github.com/a-h/templ/cmd/templ@latest && templ generate"
+}

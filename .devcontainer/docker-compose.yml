@@ -1,0 +1,44 @@
+# .devcontainer/docker-compose.yml
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+      args:
+        DOCKER_GID: "${DOCKER_GID:-1000}"
+    volumes:
+      - ..:/workspace:cached
+      - go-cache:/go
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: sleep infinity
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+    depends_on:
+      - db
+    networks:
+      - crapp-network
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - PGPORT=5431
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5431:5431"
+    networks:
+      - crapp-network
+
+networks:
+  crapp-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  go-cache:

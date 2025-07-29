@@ -2,6 +2,7 @@
 *_templ.go
 
 __debug_bin*
+.env
 
 # Generated CSS
 /assets/css/style.css

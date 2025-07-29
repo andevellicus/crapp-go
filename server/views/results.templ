@@ -1,0 +1,20 @@
+// views/assessment_results.templ
+package views
+
+templ AssessmentResults(answers map[string]string) {
+	<div class="p-6 bg-white rounded-lg shadow-md text-center">
+		<h1 class="text-4xl font-bold text-green-700 mb-4">Assessment Complete!</h1>
+		<p class="text-default mb-6">Here are your responses:</p>
+		<div class="text-left">
+			for questionID, answer := range answers {
+				<div class="mb-4">
+					<p class="font-bold">{ questionID }</p>
+					<p>{ answer }</p>
+				</div>
+			}
+		</div>
+		<div class="mt-6">
+			<a href="/" class="nav-button">Back to Home</a>
+		</div>
+	</div>
+}

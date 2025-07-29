@@ -1,0 +1,38 @@
+// views/assessment.templ
+package views
+
+import (
+    "crapp-go/internal/models" 
+    "strconv"
+)
+
+
+templ AssessmentPage(question models.Question, currentIndex, totalQuestions int) {
+	<div id="assessment-container" class="p-6 bg-white rounded-lg shadow-md">
+		<h2 class="text-2xl font-bold mb-2">{ question.Title }</h2>
+		<p class="text-gray-600 mb-4">{ question.Description }</p>
+		<form hx-post="/assessment/next" hx-target="#assessment-container" hx-swap="outerHTML">
+			<input type="hidden" name="questionId" value={ question.ID } />
+			if question.Type == "radio" {
+				for _, option := range question.Options {
+					<div class="mb-2">
+						<label class="inline-flex items-center">
+							<input type="radio" name="answer" value={ option.Value } class="form-radio" required?={question.Required}/>
+							<span class="ml-2">{ option.Label }</span>
+							if option.Description != "" {
+								<p class="text-sm text-gray-500 ml-6">{ option.Description }</p>
+							}
+						</label>
+					</div>
+				}
+			} else if question.Type == "text" {
+				<textarea name="answer" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder={ question.Placeholder } maxlength={ strconv.Itoa(question.MaxLength) }></textarea>
+			}
+
+			<div class="mt-6 flex justify-between items-center">
+				<p class="text-sm text-gray-500">Question { strconv.Itoa(currentIndex + 1) } of { strconv.Itoa(totalQuestions) }</p>
+				<button type="submit" class="green-button">Next</button>
+			</div>
+		</form>
+	</div>
+}
