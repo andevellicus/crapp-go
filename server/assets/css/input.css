@@ -1,36 +1,34 @@
 /* assets/css/input.css */
 @import "tailwindcss";
 
-.main-header {
-  /* A clean, white background with a subtle bottom border instead of a shadow */
-  @apply bg-white p-4 border-b border-gray-200 text-center;
+@theme {
+  --color-primary: #4a6fa5;
+  --color-secondary: #666666;
 }
 
-.site-title {
-  /* Ensure the title is dark and readable on the new white background */
-  @apply text-2xl font-bold text-gray-800;
+.main-header {
+  @apply bg-white p-4 text-center;
 }
+
 
 .header-main h1 {
-	@apply text-5xl font-extrabold tracking-wider uppercase;
+	@apply text-5xl font-extrabold text-primary tracking-wider uppercase;
 }
 
 .header-main h2 {
 	@apply text-xl font-light text-gray-500 mt-2;
 }
 
-
 .text-default {
   @apply text-lg text-gray-700 ;
 }
 
 .main-footer {
-  @apply bg-gray-800 text-white p-4 text-center mt-auto;
+  @apply bg-gray-50 rounded-b-lg text-primary p-4 text-center mt-auto shadow-md;
 }
 
 .nav-bar {
-	/* Dark container for the nav, with a top border as a separator */
-	@apply bg-gray-800 border-t border-gray-700;
+	@apply bg-gray-50 rounded-t-lg mt-auto shadow-md;
 }
 
 .primary-button {

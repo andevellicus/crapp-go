@@ -1,0 +1,15 @@
+package components
+
+import "crapp-go/internal/models"
+
+templ RadioOption(option models.Option, questionID string, required bool) {
+	<label class="option-label">
+		<input type="radio" name="answer" value={ option.Value } required?={ required }/>
+		<div class="option-text">
+			<strong>{ option.Label }</strong>
+			if option.Description != "" {
+				<div>{ option.Description }</div>
+			}
+		</div>
+	</label>
+}

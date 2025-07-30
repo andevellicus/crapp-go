@@ -1,0 +1,30 @@
+package components
+
+templ Button(label, hxGet, hxPost, hxTarget, hxSwap, btnClass, btnType string) {
+	<button
+		if btnType != "" {
+			type={ btnType }
+		} else {
+			type="button"
+		}
+		if hxGet != "" {
+			hx-get={ hxGet }
+		}
+		if hxPost != "" {
+			hx-post={ hxPost }
+		}
+		if hxTarget != "" {
+			hx-target={ hxTarget }
+		} else {
+            hx-target="#content"
+        }
+		if hxSwap != "" {
+			hx-swap={ hxSwap }
+		} else {
+            hx-swap="innerHTML"
+        }
+		class={ btnClass }
+	>
+		{ label }
+	</button>
+}

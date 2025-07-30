@@ -1,12 +1,13 @@
 package views
 
 import (
+	"crapp-go/views/components"
     "crapp-go/internal/models"
     "strconv"
 )
 
 templ AssessmentPage(question models.Question, currentIndex, totalQuestions int) {
-	<div id="assessment-container" class="p-6 bg-white rounded-lg shadow-md">
+	@components.Panel() {
 		<form hx-post="/assessment/next" hx-target="main#content" hx-swap="innerHTML" id="symptom-form">
 			
 			<div class="progress-indicator">
@@ -20,17 +21,9 @@ templ AssessmentPage(question models.Question, currentIndex, totalQuestions int)
 
 				if question.Type == "radio" {
 					<div class="symptom-scale">
-						for _, option := range question.Options {
-							<label class="option-label">
-								<input type="radio" name="answer" value={ option.Value } required?={ question.Required }/>
-								<div class="option-text">
-									<strong>{ option.Label }</strong>
-									if option.Description != "" {
-										<div>{ option.Description }</div>
-									}
-								</div>
-							</label>
-						}
+					for _, option := range question.Options {
+						@components.RadioOption(option, question.ID, question.Required)
+					}
 					</div>
 				} else if question.Type == "text" {
 					<textarea name="answer" class="text-input" placeholder={ question.Placeholder } maxlength={ strconv.Itoa(question.MaxLength) }></textarea>
@@ -38,13 +31,13 @@ templ AssessmentPage(question models.Question, currentIndex, totalQuestions int)
 
 				<div class="navigation-buttons">
 					if currentIndex > 0 {
-						<button type="button" hx-post="/assessment/prev" hx-target="main#content" hx-swap="innerHTML" class="secondary-button">Previous</button>
+						@components.Button("Previous", "", "/assessment/prev",  "main#content", "", "secondary-button", "")
 					} else {
 						<div></div>
 					}
-					<button type="submit" class="primary-button">Next</button>
+					@components.Button("Next", "", "",  "", "", "primary-button", "submit")
 				</div>
 			</div>
 		</form>
-	</div>
+	}
 }
