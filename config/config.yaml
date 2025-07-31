@@ -1,0 +1,11 @@
+server:
+  port: "5050"
+
+database:
+  host: "db"
+  # port: "5432"          Set in .env file
+  # user: "user"          Set in .env file
+  # password: "password"  Set in .env file
+  # dbname: "db"          Set in .env file
+
+

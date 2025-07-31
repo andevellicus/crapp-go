@@ -1,9 +1,9 @@
 package database
 
 import (
+	"crapp-go/internal/config"
 	"database/sql"
 	"fmt"
-	"os"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
@@ -13,14 +13,19 @@ var DB *sql.DB
 
 func Init(log *zap.Logger) {
 	var err error
-	dbHost := "db"
-	dbPort := os.Getenv("POSTGRES_PORT")
-	dbUser := os.Getenv("POSTGRES_USER")
-	dbPassword := os.Getenv("POSTGRES_PASSWORD")
-	dbName := os.Getenv("POSTGRES_DB")
+	/*
+		dbHost := "db"
+		dbPort := os.Getenv("POSTGRES_PORT")
+		dbUser := os.Getenv("POSTGRES_USER")
+		dbPassword := os.Getenv("POSTGRES_PASSWORD")
+		dbName := os.Getenv("POSTGRES_DB")
+	*/
+
+	// Use the configuration from Viper
+	dbConf := config.Conf.Database
 
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		dbHost, dbPort, dbUser, dbPassword, dbName)
+		dbConf.Host, dbConf.Port, dbConf.User, dbConf.Password, dbConf.DBName)
 
 	DB, err = sql.Open("pgx", connStr)
 	if err != nil {

@@ -11,12 +11,8 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-// ProjectRoot is the absolute path to the project's root directory.
-// This is set at build time using ldflags.
-var ProjectRoot string
-
 // Init initializes and returns a new zap logger.
-func Init() (*zap.Logger, error) {
+func Init(projectRoot string) (*zap.Logger, error) {
 	// Base encoder configuration for file logs (JSON format)
 	encoderConfig := zapcore.EncoderConfig{
 		MessageKey:   "message",
@@ -28,20 +24,22 @@ func Init() (*zap.Logger, error) {
 		EncodeCaller: zapcore.ShortCallerEncoder,
 	}
 
+	logDir := filepath.Join(projectRoot, "logs")
+
 	// Create a core for each level, which writes ONLY that level to a file.
-	debugFileCore, err := newFileCore(zapcore.DebugLevel, encoderConfig)
+	debugFileCore, err := newFileCore(logDir, zapcore.DebugLevel, encoderConfig)
 	if err != nil {
 		return nil, err
 	}
-	infoFileCore, err := newFileCore(zapcore.InfoLevel, encoderConfig)
+	infoFileCore, err := newFileCore(logDir, zapcore.InfoLevel, encoderConfig)
 	if err != nil {
 		return nil, err
 	}
-	warnFileCore, err := newFileCore(zapcore.WarnLevel, encoderConfig)
+	warnFileCore, err := newFileCore(logDir, zapcore.WarnLevel, encoderConfig)
 	if err != nil {
 		return nil, err
 	}
-	errorFileCore, err := newFileCore(zapcore.ErrorLevel, encoderConfig)
+	errorFileCore, err := newFileCore(logDir, zapcore.ErrorLevel, encoderConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -64,20 +62,8 @@ func Init() (*zap.Logger, error) {
 }
 
 // newFileCore creates a core that writes a specific log level to a rotating file.
-func newFileCore(level zapcore.Level, encoderConfig zapcore.EncoderConfig) (zapcore.Core, error) {
-	if ProjectRoot == "" {
-		cwd, err := os.Getwd()
-		if err != nil {
-			return nil, fmt.Errorf("could not get current working directory: %w", err)
-		}
-		if filepath.Base(cwd) == "server" {
-			ProjectRoot = filepath.Dir(cwd)
-		} else {
-			ProjectRoot = cwd
-		}
-	}
+func newFileCore(logDir string, level zapcore.Level, encoderConfig zapcore.EncoderConfig) (zapcore.Core, error) {
 
-	logDir := filepath.Join(ProjectRoot, "logs")
 	if err := os.MkdirAll(logDir, 0755); err != nil {
 		return nil, fmt.Errorf("could not create log directory: %w", err)
 	}
