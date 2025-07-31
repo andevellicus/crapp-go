@@ -1,0 +1,16 @@
+package components
+
+import "crapp-go/internal/models"
+
+templ DropDown(question models.Question) {
+	<div class="mb-4">
+		<select name="answer" class="select-input" required?={ question.Required }>
+			if question.Placeholder != "" {
+				<option value="" disabled selected>{ question.Placeholder }</option>
+			}
+			for _, option := range question.Options {
+				<option value={ option.Value }>{ option.Label }</option>
+			}
+		</select>
+	</div>
+}

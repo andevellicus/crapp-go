@@ -3,15 +3,15 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"go.uber.org/zap"
 )
 
 var DB *sql.DB
 
-func Init() {
+func Init(log *zap.Logger) {
 	var err error
 	dbHost := "db"
 	dbPort := os.Getenv("POSTGRES_PORT")
@@ -24,19 +24,19 @@ func Init() {
 
 	DB, err = sql.Open("pgx", connStr)
 	if err != nil {
-		log.Fatalf("Unable to open database connection: %v\n", err)
+		log.Fatal("Unable to open database connection", zap.Error(err))
 	}
 
 	err = DB.Ping()
 	if err != nil {
-		log.Fatalf("Unable to ping database: %v\n", err)
+		log.Fatal("Unable to ping database", zap.Error(err))
 	}
 
-	log.Println("Database connection established successfully.")
-	createTables()
+	log.Info("Database connection established successfully.")
+	createTables(log)
 }
 
-func createTables() {
+func createTables(log *zap.Logger) {
 	usersTable := `
 	CREATE TABLE IF NOT EXISTS users (
 		id SERIAL PRIMARY KEY,
@@ -70,21 +70,21 @@ func createTables() {
     `
 	_, err := DB.Exec(usersTable)
 	if err != nil {
-		log.Fatalf("Unable to create users table: %v\n", err)
+		log.Fatal("Unable to create users table", zap.Error(err))
 	}
 
 	_, err = DB.Exec(assessmentsTable)
 	if err != nil {
-		log.Fatalf("Unable to create assessments table: %v\n", err)
+		log.Fatal("Unable to create assessments table", zap.Error(err))
 	}
 
 	_, err = DB.Exec(answersTable)
 	if err != nil {
-		log.Fatalf("Unable to create answers table: %v\n", err)
+		log.Fatal("Unable to create answers table", zap.Error(err))
 	}
 
 	_, err = DB.Exec(activeAssessmentIndex)
 	if err != nil {
-		log.Fatalf("Unable to create active assessment index: %v\n", err)
+		log.Fatal("Unable to create active assessment index", zap.Error(err))
 	}
 }

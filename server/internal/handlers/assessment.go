@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 
 	"crapp-go/internal/models"
@@ -11,14 +10,16 @@ import (
 	"github.com/a-h/templ"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type AssessmentHandler struct {
+	log        *zap.Logger
 	Assessment *models.Assessment
 }
 
-func NewAssessmentHandler(assessment *models.Assessment) *AssessmentHandler {
-	return &AssessmentHandler{Assessment: assessment}
+func NewAssessmentHandler(log *zap.Logger, assessment *models.Assessment) *AssessmentHandler {
+	return &AssessmentHandler{log: log, Assessment: assessment}
 }
 
 func (h *AssessmentHandler) Start(c *gin.Context, isHTMX bool) {
@@ -31,7 +32,7 @@ func (h *AssessmentHandler) Start(c *gin.Context, isHTMX bool) {
 
 	state, err := repository.GetOrCreateAssessmentState(userID, len(h.Assessment.Questions))
 	if err != nil {
-		log.Printf("Error getting assessment state: %v", err)
+		h.log.Error("Error getting assessment state", zap.Error(err), zap.Int("userID", userID))
 		c.String(http.StatusInternalServerError, "Could not start or resume assessment")
 		return
 	}
@@ -60,6 +61,7 @@ func (h *AssessmentHandler) PreviousQuestion(c *gin.Context) {
 
 	state, err := repository.GetOrCreateAssessmentState(userID, len(h.Assessment.Questions))
 	if err != nil {
+		h.log.Error("Could not get assessment state", zap.Error(err), zap.Int("userID", userID))
 		c.String(http.StatusInternalServerError, "Could not get assessment state")
 		return
 	}
@@ -72,6 +74,7 @@ func (h *AssessmentHandler) PreviousQuestion(c *gin.Context) {
 	// Only need to update the index in the database
 	err = repository.UpdateAssessmentIndex(state.ID, prevIndex)
 	if err != nil {
+		h.log.Error("Could not update state", zap.Error(err), zap.Int("assessmentID", state.ID))
 		c.String(http.StatusInternalServerError, "Could not update state")
 		return
 	}
@@ -92,6 +95,7 @@ func (h *AssessmentHandler) NextQuestion(c *gin.Context) {
 
 	state, err := repository.GetOrCreateAssessmentState(userID, len(h.Assessment.Questions))
 	if err != nil {
+		h.log.Error("Could not get assessment state", zap.Error(err), zap.Int("userID", userID))
 		c.String(http.StatusInternalServerError, "Could not get assessment state")
 		return
 	}
@@ -102,6 +106,7 @@ func (h *AssessmentHandler) NextQuestion(c *gin.Context) {
 
 	err = repository.SaveAnswerAndUpdateState(state.ID, questionID, answer, nextIndex)
 	if err != nil {
+		h.log.Error("Could not save answer", zap.Error(err), zap.Int("assessmentID", state.ID))
 		c.String(http.StatusInternalServerError, "Could not save answer")
 		return
 	}
@@ -109,7 +114,11 @@ func (h *AssessmentHandler) NextQuestion(c *gin.Context) {
 	if nextIndex >= len(state.QuestionOrder) {
 		repository.CompleteAssessment(state.ID)
 		answers, _ := repository.GetAnswersForAssessment(state.ID)
-		views.AssessmentResults(answers).Render(c, c.Writer)
+		err = views.AssessmentResults(answers).Render(c, c.Writer)
+		if err != nil {
+			h.log.Error("Error rendering assessment results", zap.Error(err), zap.Int("assessmentID", state.ID))
+		}
+		h.log.Info("Assessment completed", zap.Int("assessmentID", state.ID))
 		return
 	}
 

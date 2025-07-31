@@ -6,7 +6,7 @@ templ Nav(isLoggedIn bool) {
 	<nav id="main-nav" class="nav-bar" hx-get="/nav" hx-trigger="logout from:body, login from:body" hx-target="#main-nav" hx-swap="outerHTML">
 		<div class="flex w-full items-center justify-end space-x-4 p-4">
 			if isLoggedIn {
-				@components.Button("Assessment", "/assessment", "", "", "", "secondary-button", "")
+				@components.Button("Home", "/assessment", "", "", "", "secondary-button", "")
 				@components.Button("Logout", "", "/logout", "#content", "", "secondary-button", "")
 			} else {
 				@components.Button("Login", "/login", "", "",  "", "secondary-button", "")

@@ -6,12 +6,11 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 // UserLoaderMiddleware checks for a userID in the session.
-// If found, it loads the user from the database and adds it to the context.
-// This ensures we don't have "zombie" sessions for users who no longer exist.
-func UserLoaderMiddleware() gin.HandlerFunc {
+func UserLoaderMiddleware(log *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
 		userID, ok := session.Get("userID").(int)
@@ -24,6 +23,10 @@ func UserLoaderMiddleware() gin.HandlerFunc {
 		user, err := repository.GetUserByID(c.Request.Context(), userID)
 		if err != nil {
 			// User ID from session is invalid (user was deleted, etc.)
+			log.Warn("Invalid user ID in session, clearing.",
+				zap.Int("userID", userID),
+				zap.Error(err),
+			)
 			// Clear the bad session and treat as a guest.
 			session.Clear()
 			session.Options(sessions.Options{Path: "/", MaxAge: -1})
@@ -33,15 +36,20 @@ func UserLoaderMiddleware() gin.HandlerFunc {
 		}
 
 		// User is valid, store user object in context for other handlers.
+		log.Debug("User loaded from session and added to context.", zap.Int("userID", user.ID))
 		c.Set("user", user)
 		c.Next()
 	}
 }
 
 // AuthRequired now simply checks if a valid user was loaded into the context.
-func AuthRequired() gin.HandlerFunc {
+func AuthRequired(log *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if _, exists := c.Get("user"); !exists {
+			log.Warn("Unauthorized access attempt",
+				zap.String("path", c.Request.URL.Path),
+				zap.String("ip", c.ClientIP()),
+			)
 			if c.GetHeader("HX-Request") == "true" {
 				c.Header("HX-Redirect", "/")
 			} else {

@@ -9,19 +9,24 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
-func Setup(assessment *models.Assessment) *gin.Engine {
-	router := gin.Default()
+func Setup(log *zap.Logger, assessment *models.Assessment) *gin.Engine {
+	// Set up a new Gin router, add recovery middleware and request logging.
+	router := gin.New()
+	router.Use(gin.Recovery())
+	router.Use(RequestLogger(log))
+
 	store := cookie.NewStore([]byte("secret"))
 	router.Use(sessions.Sessions("mysession", store))
-	// Use our new middleware on every request.
-	router.Use(UserLoaderMiddleware())
+	// Use our new middleware on every request, passing the logger to it.
+	router.Use(UserLoaderMiddleware(log))
 	router.Static("/assets", "./assets")
 
-	// Pass the assessment model to both handlers
-	authHandler := handlers.NewAuthHandler(assessment)
-	assessmentHandler := handlers.NewAssessmentHandler(assessment)
+	// Pass the logger and assessment model to the handlers
+	authHandler := handlers.NewAuthHandler(log, assessment)
+	assessmentHandler := handlers.NewAssessmentHandler(log, assessment)
 
 	router.GET("/", func(c *gin.Context) {
 		// We now check for the user object in the context, not the session.
@@ -50,7 +55,7 @@ func Setup(assessment *models.Assessment) *gin.Engine {
 	router.POST("/register", authHandler.Register)
 
 	authorized := router.Group("/assessment")
-	authorized.Use(AuthRequired())
+	authorized.Use(AuthRequired(log))
 	{
 		// Pass false because this is always a full page load or redirect context
 		authorized.GET("", func(c *gin.Context) {

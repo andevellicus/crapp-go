@@ -88,6 +88,10 @@
     @apply shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-sky-500;
 }
 
+.select-input {
+    @apply shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white;
+}
+
 .navigation-buttons {
     @apply flex justify-between mt-6 p-4 bg-gray-50 rounded-lg;
 }

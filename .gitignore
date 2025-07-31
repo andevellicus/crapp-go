@@ -4,5 +4,7 @@
 __debug_bin*
 .env
 
+*.log
+
 # Generated CSS
 server/assets/css/style.css
