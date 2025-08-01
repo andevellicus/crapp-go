@@ -9,14 +9,14 @@ import (
 // Add a new parameter for an optional error message
 templ AssessmentPage(question models.Question, currentIndex, totalQuestions int, errorMessage string) {
 	@components.Panel() {
-		<form hx-post="/assessment/next" hx-target="main#content" hx-swap="innerHTML" id="symptom-form" novalidate>
+		<form hx-post="/assessment/next" hx-target="main#content" hx-swap="innerHTML" id="symptom-form"  novalidate>
 
 			// Conditionally render the alert component if there's an error
-			if errorMessage != "" {
-				<div class="mb-4">
-					@components.Alert(errorMessage, "error")
-				</div>
-			}
+			<div class="min-h-[80px]">
+				if errorMessage != "" {
+						@components.Alert(errorMessage, "error")
+				}
+			</div>
 			
 			<div class="progress-indicator">
 				Question { strconv.Itoa(currentIndex + 1) } of { strconv.Itoa(totalQuestions) }

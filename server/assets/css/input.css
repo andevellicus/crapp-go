@@ -65,6 +65,10 @@
     @apply px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow-sm hover:shadow-md transition duration-300;
   }
 
+  .alert-fade-in-out {
+    animation: fadeInOut 5s ease-in-out forwards;
+  }
+
   /* Assessment form styles */
   .progress-indicator {
       @apply text-sm text-gray-400 mb-6 text-center;
@@ -112,5 +116,20 @@
 
   .navigation-buttons {
       @apply flex justify-between mt-8 p-4 bg-base-200 rounded-lg;
+  }
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }

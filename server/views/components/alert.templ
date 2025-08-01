@@ -1,19 +1,15 @@
 package components
 
-// We can pass in a type to change the color (e.g., "error", "success")
-// This version uses templ's conditional class rendering to avoid Go variables.
 templ Alert(message, alertType string) {
 	<div
 		class={
-			"border px-4 py-3 rounded relative text-center",
-			// Add success classes only if alertType is "success"
+			"alert-fade-in-out border px-4 py-3 rounded relative",
 			templ.KV("bg-green-100 border-green-400 text-green-700", alertType == "success"),
-			// Add warning classes only if alertType is "warning"
 			templ.KV("bg-yellow-100 border-yellow-400 text-yellow-700", alertType == "warning"),
-			// Add error classes if it's not success or warning (our default)
 			templ.KV("bg-red-100 border-red-400 text-red-700", alertType != "success" && alertType != "warning"),
 		}
 		role="alert"
+        _="on load wait 5s then remove me"
 	>
 		<span class="block sm:inline">{ message }</span>
 	</div>
