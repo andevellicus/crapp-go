@@ -1,97 +1,116 @@
 /* assets/css/input.css */
+
+/* Import Tailwind's base styles and utilities */
 @import "tailwindcss";
 
+/*
+  Define all your custom theme tokens here using the @theme directive.
+  Tailwind v4 will automatically generate utility classes from these variables.
+  For example, --color-primary creates bg-primary, text-primary, border-primary, etc.
+*/
 @theme {
-  --color-primary: #4a6fa5;
-  --color-secondary: #666666;
+  --font-sans: "Inter", "sans-serif";
+
+  --color-primary: #3b82f6;      /* Blue-500 */
+  --color-secondary: #6b7280;    /* Gray-500 */
+  --color-accent: #10b981;       /* Emerald-500 */
+  --color-base-100: #ffffff;   /* White */
+  --color-base-200: #f9fafb;   /* Gray-50 */
+  --color-base-300: #f3f4f6;   /* Gray-100 */
 }
 
-.main-header {
-  @apply bg-white p-4 text-center;
-}
+/* You can still define custom component classes in layers */
+@layer components {
+  .main-header {
+    @apply bg-base-100 rounded-t-lg p-6 text-center border-b border-gray-200 shadow-xl;
+  }
 
+  .header-main h1 {
+    @apply text-4xl font-extrabold text-primary tracking-tight;
+  }
 
-.header-main h1 {
-	@apply text-5xl font-extrabold text-primary tracking-wider uppercase;
-}
+  .header-main h2 {
+    @apply text-lg font-light text-secondary mt-1;
+  }
 
-.header-main h2 {
-	@apply text-xl font-light text-gray-500 mt-2;
-}
+  .page-title {
+    @apply text-4xl font-bold text-center text-primary mb-6;
+  }
 
-.text-default {
-  @apply text-lg text-gray-700 ;
-}
+  .text-default {
+    @apply text-base text-gray-600;
+  }
 
-.main-footer {
-  @apply bg-gray-50 rounded-b-lg text-primary p-4 text-center mt-auto shadow-md;
-}
+  .main-footer {
+    @apply bg-base-200 text-secondary p-4 text-center mt-8 rounded-lg;
+  }
 
-.nav-bar {
-	@apply bg-gray-50 rounded-t-lg mt-auto shadow-md;
-}
+  .nav-bar {
+    @apply bg-base-100 shadow-xl;
+  }
 
-.primary-button {
-  @apply px-4 py-2 bg-sky-700 hover:bg-sky-900 text-white rounded-md font-medium transition duration-300;
-}
+  .primary-button {
+    @apply px-6 py-2 bg-primary hover:bg-blue-600 text-white rounded-lg font-semibold transition duration-300 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary;
+  }
 
-.secondary-button {
-  @apply px-4 py-2 border border-sky-700 text-sky-700 hover:bg-blue-50 rounded-md font-medium transition duration-300;
-}
+  .secondary-button {
+    @apply px-6 py-2 border border-gray-300 text-secondary hover:bg-gray-100 rounded-lg font-semibold transition duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary;
+  }
 
-.green-button {
-	@apply px-4 py-2 bg-emerald-500 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-md transition duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-400;
-}
+  .green-button {
+    @apply px-6 py-2 bg-accent hover:bg-emerald-600 text-white font-semibold rounded-lg shadow-sm hover:shadow-md transition duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent;
+  }
 
-.red-button {
-  @apply px-4 py-2 bg-red-700 hover:bg-red-900 text-white font-semibold rounded-lg shadow-md transition duration-300;
-}
+  .red-button {
+    @apply px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow-sm hover:shadow-md transition duration-300;
+  }
 
-/* New styles for the assessment form */
-.progress-indicator {
-    @apply text-sm text-gray-500 mb-4 text-center;
-}
+  /* Assessment form styles */
+  .progress-indicator {
+      @apply text-sm text-gray-400 mb-6 text-center;
+  }
 
-.form-group h3 {
-    @apply text-2xl font-bold mb-1;
-}
+  .form-group h3 {
+      @apply text-2xl font-bold mb-2 text-gray-800;
+  }
 
-.form-group p {
-    @apply text-gray-600 mb-4;
-}
+  .form-group p {
+      @apply text-secondary mb-6;
+  }
 
-.symptom-scale {
-    @apply flex flex-col space-y-2;
-}
+  .symptom-scale {
+      @apply flex flex-col space-y-3;
+  }
 
-.option-label {
-    @apply flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors;
-}
+  .option-label {
+      @apply flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors has-[:checked]:bg-blue-50 has-[:checked]:border-primary;
+  }
 
-.option-label input[type="radio"] {
-    @apply h-5 w-5 text-sky-600 focus:ring-sky-500 border-gray-300;
-}
+  .option-label input[type="radio"] {
+      @apply h-5 w-5 text-primary focus:ring-primary border-gray-300;
+  }
 
-.option-text {
-    @apply ml-4;
-}
+  .option-text {
+      @apply ml-4;
+  }
 
-.option-text strong {
-    @apply block font-semibold text-gray-800;
-}
+  .option-text strong {
+      @apply block font-semibold text-gray-900;
+  }
 
-.option-text div {
-    @apply text-sm text-gray-500;
-}
+  .option-text div {
+      @apply text-sm text-secondary;
+  }
 
-.text-input {
-    @apply shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-sky-500;
-}
+  .text-input {
+      @apply shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-secondary leading-tight focus:outline-none focus:ring-2 focus:ring-primary;
+  }
 
-.select-input {
-    @apply shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white;
-}
+  .select-input {
+      @apply shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-secondary leading-tight focus:outline-none focus:ring-2 focus:ring-primary bg-white;
+  }
 
-.navigation-buttons {
-    @apply flex justify-between mt-6 p-4 bg-gray-50 rounded-lg;
+  .navigation-buttons {
+      @apply flex justify-between mt-8 p-4 bg-base-200 rounded-lg;
+  }
 }

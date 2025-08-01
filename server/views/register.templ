@@ -5,8 +5,14 @@ import "crapp-go/views/components"
 templ Register() {
 	@components.Panel() {
 		<div class="mx-auto max-w-sm">
-			<h1 class="text-4xl font-bold text-center text-sky-700 mb-4">Register</h1>
-			<form hx-post="/register" hx-target="#content" hx-swap="innerHTML">
+			<h1 class="page-title">Register</h1>
+			<div id="register-error-container"></div><br>
+			<form
+				hx-post="/register"
+				hx-ext="response-targets"
+				hx-target-400="#register-error-container"
+				novalidate
+			>
 				
 				@components.FormField("email", "email", "Email", "email", true)
 				@components.FormField("password", "password", "Password", "password", true)

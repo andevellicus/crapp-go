@@ -6,6 +6,7 @@ import (
 	"crapp-go/internal/models"
 	"crapp-go/internal/repository"
 	"crapp-go/views"
+	"crapp-go/views/components"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -33,32 +34,22 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	user, err := repository.GetUserByEmail(c, email)
 	if err != nil || !user.CheckPassword(password) {
 		h.log.Warn("Invalid login attempt", zap.String("email", email))
-		c.String(http.StatusUnauthorized, "Invalid email or password.")
+		// Set status
+		c.Status(http.StatusUnauthorized)
+		// Render the form with error
+		components.Alert("Invalid email or password.", "error").Render(c, c.Writer)
 		return
 	}
 
 	session.Set("userID", user.ID)
 	if err := session.Save(); err != nil {
 		h.log.Error("Failed to save session", zap.Error(err))
-		c.String(http.StatusInternalServerError, "Failed to login")
+		c.Status(http.StatusInternalServerError)
+		components.Alert("Internal server error.", "error").Render(c, c.Writer)
 		return
 	}
 
-	c.Header("HX-Trigger", "login")
-
-	h.log.Info("User logged in successfully", zap.Int("userID", user.ID))
-	state, err := repository.GetOrCreateAssessmentState(user.ID, len(h.Assessment.Questions))
-	if err != nil {
-		h.log.Error("Failed to get or create assessment state", zap.Error(err))
-		c.String(http.StatusInternalServerError, "Could not start assessment")
-		return
-	}
-
-	questionIndex := state.QuestionOrder[state.CurrentQuestionIndex]
-	currentQuestion := h.Assessment.Questions[questionIndex]
-
-	// Render the assessment component directly
-	views.AssessmentPage(currentQuestion, state.CurrentQuestionIndex, len(state.QuestionOrder)).Render(c, c.Writer)
+	c.Header("HX-Redirect", "/assessment") // Redirect user to the assessment page on successful login
 }
 
 func (h *AuthHandler) RegisterPage(c *gin.Context) {
@@ -73,9 +64,16 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	email := c.PostForm("email")
 	password := c.PostForm("password")
 
+	if email == "" || password == "" {
+		c.Status(http.StatusBadRequest)
+		components.Alert("Email and password are required.", "error").Render(c, c.Writer)
+		return
+	}
+
 	if _, err := repository.CreateUser(email, password); err != nil {
 		h.log.Error("Failed to create user", zap.Error(err))
-		c.String(http.StatusInternalServerError, "Failed to register")
+		c.Status(http.StatusInternalServerError)
+		components.Alert("Internal server error.", "error").Render(c, c.Writer)
 		return
 	}
 
@@ -89,7 +87,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 func (h *AuthHandler) Logout(c *gin.Context) {
 	session := sessions.Default(c)
-	userID, _ := session.Get("userID").(int)
+	//userID, _ := session.Get("userID").(int)
 	session.Clear()
 	session.Options(sessions.Options{Path: "/", MaxAge: -1})
 	if err := session.Save(); err != nil {
@@ -100,10 +98,5 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 
 	// Trigger the nav bar to re-render itself as logged-out
 	c.Header("HX-Trigger", "logout")
-	// Directly render the login view. HTMX will swap this into the #content div.
-	err := views.Login().Render(c, c.Writer)
-	if err != nil {
-		h.log.Error("Error rendering login view on logout", zap.Error(err))
-	}
-	h.log.Info("User logged out successfully", zap.Int("userID", userID))
+	c.Header("HX-Redirect", "/")
 }

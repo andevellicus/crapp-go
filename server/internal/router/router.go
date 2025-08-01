@@ -6,6 +6,7 @@ import (
 	"crapp-go/views"
 	"crapp-go/views/common"
 
+	"github.com/a-h/templ"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -38,8 +39,7 @@ func Setup(log *zap.Logger, assessment *models.Assessment) *gin.Engine {
 			return
 		}
 
-		// For guests, render the full page with the Login component.
-		views.Page("CRAPP", false).Render(c.Request.Context(), c.Writer)
+		views.Layout("CRAPP", false).Render(templ.WithChildren(c.Request.Context(), views.Login()), c.Writer)
 	})
 
 	router.GET("/nav", func(c *gin.Context) {

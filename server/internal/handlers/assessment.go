@@ -41,7 +41,7 @@ func (h *AssessmentHandler) Start(c *gin.Context, isHTMX bool) {
 	questionIndex := state.QuestionOrder[state.CurrentQuestionIndex]
 	currentQuestion := h.Assessment.Questions[questionIndex]
 
-	component := views.AssessmentPage(currentQuestion, state.CurrentQuestionIndex, len(state.QuestionOrder))
+	component := views.AssessmentPage(currentQuestion, state.CurrentQuestionIndex, len(state.QuestionOrder), "")
 
 	if isHTMX {
 		component.Render(c.Request.Context(), c.Writer)
@@ -82,7 +82,7 @@ func (h *AssessmentHandler) PreviousQuestion(c *gin.Context) {
 	prevQuestionIndex := state.QuestionOrder[prevIndex]
 	prevQuestion := h.Assessment.Questions[prevQuestionIndex]
 
-	views.AssessmentPage(prevQuestion, prevIndex, len(state.QuestionOrder)).Render(c, c.Writer)
+	views.AssessmentPage(prevQuestion, prevIndex, len(state.QuestionOrder), "").Render(c, c.Writer)
 }
 
 func (h *AssessmentHandler) NextQuestion(c *gin.Context) {
@@ -100,8 +100,20 @@ func (h *AssessmentHandler) NextQuestion(c *gin.Context) {
 		return
 	}
 
+	// Get the current question to check its properties
+	currentQuestionIndexInOrder := state.QuestionOrder[state.CurrentQuestionIndex]
+	currentQuestion := h.Assessment.Questions[currentQuestionIndexInOrder]
+
 	questionID := c.PostForm("questionId")
 	answer := c.PostForm("answer")
+
+	if currentQuestion.Required && answer == "" {
+		errorMessage := "This question is required. Please select an answer."
+		// Re-render the same page with an error message
+		views.AssessmentPage(currentQuestion, state.CurrentQuestionIndex, len(state.QuestionOrder), errorMessage).Render(c, c.Writer)
+		return // Stop processing
+	}
+
 	nextIndex := state.CurrentQuestionIndex + 1
 
 	err = repository.SaveAnswerAndUpdateState(state.ID, questionID, answer, nextIndex)
@@ -122,9 +134,9 @@ func (h *AssessmentHandler) NextQuestion(c *gin.Context) {
 		return
 	}
 
-	// Get the next question using the updated index
-	nextQuestionIndex := state.QuestionOrder[nextIndex]
-	nextQuestion := h.Assessment.Questions[nextQuestionIndex]
+	nextQuestionIndexInOrder := state.QuestionOrder[nextIndex]
+	nextQuestion := h.Assessment.Questions[nextQuestionIndexInOrder]
 
-	views.AssessmentPage(nextQuestion, nextIndex, len(state.QuestionOrder)).Render(c, c.Writer)
+	// Pass an empty string for the error message on success
+	views.AssessmentPage(nextQuestion, nextIndex, len(state.QuestionOrder), "").Render(c, c.Writer)
 }

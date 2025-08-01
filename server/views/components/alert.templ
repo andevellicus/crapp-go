@@ -5,7 +5,7 @@ package components
 templ Alert(message, alertType string) {
 	<div
 		class={
-			"border px-4 py-3 rounded relative",
+			"border px-4 py-3 rounded relative text-center",
 			// Add success classes only if alertType is "success"
 			templ.KV("bg-green-100 border-green-400 text-green-700", alertType == "success"),
 			// Add warning classes only if alertType is "warning"
