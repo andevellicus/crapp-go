@@ -16,6 +16,10 @@ templ Layout(title string, isLoggedIn bool) {
 			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 			<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 			<link href="/assets/css/style.css" rel="stylesheet"/>
+			// Only render the script tag if the user is logged in.
+			if isLoggedIn {
+				<script src="/assets/js/interaction-tracker.js" defer></script>
+			}
 		</head>
 		<body class="bg-base-300 font-sans">
 			<div class="container mx-auto max-w-3xl py-8">

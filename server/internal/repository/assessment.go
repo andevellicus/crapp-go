@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"database/sql"
 	"math/rand"
 	"time"
 
@@ -11,33 +12,7 @@ import (
 )
 
 func GetOrCreateAssessmentState(userID int, totalQuestions int) (*models.AssessmentState, error) {
-	// First, try to insert a new assessment.
-	// ON CONFLICT(user_id) WHERE is_complete = false DO NOTHING
-	// This ensures that we only insert if there is no other in-progress assessment for this user.
-	order := make([]int, totalQuestions)
-	for i := range order {
-		order[i] = i
-	}
-	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(len(order), func(i, j int) { order[i], order[j] = order[j], order[i] })
-	order64 := make([]int64, len(order))
-	for i, v := range order {
-		order64[i] = int64(v)
-	}
-
-	insertQuery := `
-		INSERT INTO assessments (user_id, question_order, current_question_index)
-		VALUES ($1, $2, 0)
-		ON CONFLICT(user_id) WHERE is_complete = false
-		DO NOTHING
-	`
-	_, err := database.DB.Exec(insertQuery, userID, pq.Array(order64))
-	if err != nil {
-		return nil, err
-	}
-
-	// Now, whether we inserted or not, select the active assessment.
-	// This will return either the one we just created or the one that already existed.
+	// First, try to find an existing active assessment.
 	state := &models.AssessmentState{}
 	selectQuery := `
 		SELECT id, user_id, is_complete, question_order, current_question_index
@@ -45,8 +20,39 @@ func GetOrCreateAssessmentState(userID int, totalQuestions int) (*models.Assessm
 		WHERE user_id = $1 AND is_complete = false
 		LIMIT 1
 	`
-	err = database.DB.QueryRow(selectQuery, userID).Scan(&state.ID, &state.UserID, &state.IsComplete, &state.QuestionOrder, &state.CurrentQuestionIndex)
-	return state, err
+	err := database.DB.QueryRow(selectQuery, userID).Scan(&state.ID, &state.UserID, &state.IsComplete, &state.QuestionOrder, &state.CurrentQuestionIndex)
+
+	// If we found an existing one, return it.
+	if err == nil {
+		return state, nil
+	}
+
+	// If no row was found, and we have questions to create an assessment with, create one.
+	if err == sql.ErrNoRows && totalQuestions > 0 {
+		order := make([]int, totalQuestions)
+		for i := range order {
+			order[i] = i
+		}
+		r := rand.New(rand.NewSource(time.Now().UnixNano()))
+		r.Shuffle(len(order), func(i, j int) { order[i], order[j] = order[j], order[i] })
+
+		order64 := make([]int64, len(order))
+		for i, v := range order {
+			order64[i] = int64(v)
+		}
+
+		insertQuery := `
+			INSERT INTO assessments (user_id, question_order, current_question_index)
+			VALUES ($1, $2, 0)
+			RETURNING id, user_id, is_complete, question_order, current_question_index
+		`
+
+		err = database.DB.QueryRow(insertQuery, userID, pq.Array(order64)).Scan(&state.ID, &state.UserID, &state.IsComplete, &state.QuestionOrder, &state.CurrentQuestionIndex)
+		return state, err
+	}
+
+	// If there was an error other than "no rows", or if we were asked to create an assessment with no questions, return the error.
+	return nil, err
 }
 
 func SaveAnswerAndUpdateState(assessmentID int, questionID string, answer string, nextIndex int) error {

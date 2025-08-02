@@ -28,7 +28,7 @@ func Setup(log *zap.Logger, assessment *models.Assessment) *gin.Engine {
 	// Pass the logger and assessment model to the handlers
 	authHandler := handlers.NewAuthHandler(log, assessment)
 	assessmentHandler := handlers.NewAssessmentHandler(log, assessment)
-
+	metricsHandler := handlers.NewMetricsHandler(log)
 	router.GET("/", func(c *gin.Context) {
 		// We now check for the user object in the context, not the session.
 		_, isLoggedIn := c.Get("user")
@@ -51,8 +51,9 @@ func Setup(log *zap.Logger, assessment *models.Assessment) *gin.Engine {
 	router.GET("/login", authHandler.ShowLoginPage)
 	router.POST("/login", authHandler.Login)
 	router.POST("/logout", authHandler.Logout)
-	router.GET("/register", authHandler.RegisterPage)
+	router.GET("/register", authHandler.ShowRegisterPage)
 	router.POST("/register", authHandler.Register)
+	router.POST("/metrics", metricsHandler.SaveMetrics)
 
 	authorized := router.Group("/assessment")
 	authorized.Use(AuthRequired(log))

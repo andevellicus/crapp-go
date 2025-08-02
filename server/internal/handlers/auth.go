@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"database/sql"
 	"net/http"
+	"strings"
 
 	"crapp-go/internal/models"
 	"crapp-go/internal/repository"
+	util "crapp-go/internal/utils"
 	"crapp-go/views"
 	"crapp-go/views/components"
 
@@ -52,7 +55,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	c.Header("HX-Redirect", "/assessment") // Redirect user to the assessment page on successful login
 }
 
-func (h *AuthHandler) RegisterPage(c *gin.Context) {
+func (h *AuthHandler) ShowRegisterPage(c *gin.Context) {
 	err := views.Register().Render(c, c.Writer)
 	if err != nil {
 		h.log.Error("Error rendering register page", zap.Error(err))
@@ -61,12 +64,51 @@ func (h *AuthHandler) RegisterPage(c *gin.Context) {
 }
 
 func (h *AuthHandler) Register(c *gin.Context) {
-	email := c.PostForm("email")
+	email := strings.TrimSpace(c.PostForm("email"))
 	password := c.PostForm("password")
+	confirmPassword := c.PostForm("confirmPassword")
 
+	// 1. Check for empty fields
 	if email == "" || password == "" {
 		c.Status(http.StatusBadRequest)
 		components.Alert("Email and password are required.", "error").Render(c, c.Writer)
+		return
+	}
+
+	// 2. Validate Email Format
+	if !util.IsValidEmail(email) {
+		c.Status(http.StatusBadRequest)
+		components.Alert("Please enter a valid email address.", "error").Render(c, c.Writer)
+		return
+	}
+
+	// 3. Validate Password Complexity
+	if !util.IsComplexPassword(password) {
+		c.Status(http.StatusBadRequest)
+		// This error will target the #password-error-container
+		components.Alert("Password does not meet complexity requirements.", "error").Render(c, c.Writer)
+		return
+	}
+
+	// 4. Check if passwords match
+	if password != confirmPassword {
+		c.Status(http.StatusBadRequest)
+		components.Alert("Passwords do not match.", "error").Render(c, c.Writer)
+		return
+	}
+
+	// 5. Check if email already exists
+	_, err := repository.GetUserByEmail(c, email)
+	if err != sql.ErrNoRows {
+		if err == nil {
+			h.log.Warn("Registration attempt with existing email", zap.String("email", email))
+			c.Status(http.StatusBadRequest)
+			components.Alert("A user with this email address already exists.", "error").Render(c, c.Writer)
+			return
+		}
+		h.log.Error("Database error during registration check", zap.Error(err))
+		c.Status(http.StatusInternalServerError)
+		components.Alert("Internal server error.", "error").Render(c, c.Writer)
 		return
 	}
 
@@ -79,7 +121,8 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 	h.log.Info("User registered successfully", zap.String("email", email))
 
-	err := views.Login().Render(c, c.Writer)
+	// On success, render the login form so the user can sign in
+	err = views.Login().Render(c, c.Writer)
 	if err != nil {
 		h.log.Error("Error rendering login component after registration", zap.Error(err))
 	}

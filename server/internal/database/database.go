@@ -68,6 +68,17 @@ func createTables(log *zap.Logger) {
 		answer_value TEXT NOT NULL
 	);`
 
+	metricsTable := `
+	CREATE TABLE IF NOT EXISTS metrics (
+		id SERIAL PRIMARY KEY,
+		assessment_id INTEGER REFERENCES assessments(id) ON DELETE CASCADE,
+		question_id VARCHAR(255),
+		metric_key VARCHAR(255) NOT NULL,
+		metric_value FLOAT NOT NULL,
+		sample_size INTEGER,
+		created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+	);`
+
 	activeAssessmentIndex := `
     CREATE UNIQUE INDEX IF NOT EXISTS one_active_assessment_per_user_idx
     ON assessments (user_id)
@@ -86,6 +97,11 @@ func createTables(log *zap.Logger) {
 	_, err = DB.Exec(answersTable)
 	if err != nil {
 		log.Fatal("Unable to create answers table", zap.Error(err))
+	}
+
+	_, err = DB.Exec(metricsTable)
+	if err != nil {
+		log.Fatal("Unable to create assessment_metrics table", zap.Error(err))
 	}
 
 	_, err = DB.Exec(activeAssessmentIndex)
