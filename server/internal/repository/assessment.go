@@ -55,28 +55,6 @@ func GetOrCreateAssessmentState(userID int, totalQuestions int) (*models.Assessm
 	return nil, err
 }
 
-func SaveAnswerAndUpdateState(assessmentID int, questionID string, answer string, nextIndex int) error {
-	tx, err := database.DB.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	answerQuery := `INSERT INTO answers (assessment_id, question_id, answer_value) VALUES ($1, $2, $3)`
-	_, err = tx.Exec(answerQuery, assessmentID, questionID, answer)
-	if err != nil {
-		return err
-	}
-
-	stateQuery := `UPDATE assessments SET current_question_index = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`
-	_, err = tx.Exec(stateQuery, nextIndex, assessmentID)
-	if err != nil {
-		return err
-	}
-
-	return tx.Commit()
-}
-
 func UpdateAssessmentIndex(assessmentID int, newIndex int) error {
 	query := `UPDATE assessments SET current_question_index = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`
 	_, err := database.DB.Exec(query, newIndex, assessmentID)

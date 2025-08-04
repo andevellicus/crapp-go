@@ -1,0 +1,25 @@
+package components
+
+templ DST(questionID string, settingsJSON string) {
+	<div id="dst-container" class="p-4 text-center" data-question-id={ questionID } data-settings={ settingsJSON }>
+	</div>
+	<script src="/assets/js/dst.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			const container = document.getElementById('dst-container');
+			// Read the settings from the data attribute
+			const settingsString = container.dataset.settings;
+			// Parse the string read from the DOM
+			const testSettings = JSON.parse(settingsString);
+
+			initDST('dst-container', testSettings, function(results) {
+				const form = document.querySelector('#symptom-form');
+				if (form) {
+					const answerInput = form.querySelector('input[name="answer"]');
+					answerInput.value = JSON.stringify(results);
+					htmx.trigger(form, 'submit');
+				}
+			});
+		});
+	</script>
+}

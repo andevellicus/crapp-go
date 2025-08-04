@@ -140,3 +140,68 @@ questions:
     required: false
     placeholder: Describe any significant events (optional)
     max_length: 500
+
+  - id: dst 
+    title: Digit Span Test
+    description: Measures short-term memory. Remember the sequence of digits shown.
+    type: dst 
+    metrics_type: dst 
+    required: false 
+    # Optional settings can be added here later if needed
+    options:
+      # How many digits are shown initially
+      - value: 3
+        label: initialSpan
+      # Max number of digits to show 
+      - value: 6
+        label: maxSpan
+      # How long to show each digit (ms)
+      - value: 1000
+        label: displayTimePerDigit
+      # How long to wait before showing the next digit (ms)
+      - value: 500
+        label: interDigitInterval
+      # How long does the recall portion take
+      - value: 10000
+        label: recallTimeout
+      # How many trials per span
+      - value: 2
+        label: trialsPerSpan
+
+  - id: cpt 
+    title: Continuous Performance Test
+    description: This test measures your sustained attention and response control. You'll see letters appearing on screen and need to respond only to the target letter.
+    type: cpt
+    metrics_type: cpt
+    required: false 
+    options:
+      - value: 30000 # Time in milliseconds
+        label: testDuration
+      - value: 300   # How long do we keep the stimulus up
+        label: stimulusDuration
+      - value: 1000
+        label: interStimulusInterval
+      - value: 0.7
+        label: targetProbability
+      - value: X
+        label: targets
+      - value: A, B, C, D, E, F, G, H, K, L
+        label: nonTargets
+
+  - id: trail_making_test
+    title: Trail Making Test
+    description: This test measures visual attention and task switching. You'll connect a series of numbers (Part A) or alternate between numbers and letters (Part B) in ascending order.
+    type: tmt
+    metrics_type: tmt
+    required: false 
+    options:
+      - value: 20000 # Time limit for Part A
+        label: partATimeLimit
+      - value: 30000 # Time limit for Part B
+        label: partBTimeLimit
+      - value: 15 # Number of items in Part A
+        label: partAItems
+      - value: 15 # Number of items in Part B
+        label: partBItems
+      - value: true # Whether to include Part B
+        label: includePartB
