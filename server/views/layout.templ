@@ -1,6 +1,7 @@
 package views
 
 import "crapp-go/views/common"
+import "fmt"
 
 templ Layout(title string, isLoggedIn bool, csrfToken string, cspNonce string) {
 	<!DOCTYPE html>
@@ -26,7 +27,7 @@ templ Layout(title string, isLoggedIn bool, csrfToken string, cspNonce string) {
 				<script src="/assets/js/tmt.js" defer></script>
 			}
 		</head>
-		<body class="bg-base-300 font-sans">
+		<body class="bg-base-300 font-sans" data-is-logged-in={ fmt.Sprintf("%v", isLoggedIn) }>
 			<div class="container mx-auto max-w-3xl py-8">
 				@common.Header()
 				@common.Nav(isLoggedIn)
@@ -37,7 +38,7 @@ templ Layout(title string, isLoggedIn bool, csrfToken string, cspNonce string) {
 			</div>
 
 			<script nonce={ cspNonce }>
-				// Handles CSRF token for HTMX requests
+				// This CSRF handler is needed on all pages, logged in or out.
 				document.body.addEventListener('htmx:configRequest', function(evt) {
 					let csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 					if (csrfToken) {
@@ -45,56 +46,52 @@ templ Layout(title string, isLoggedIn bool, csrfToken string, cspNonce string) {
 					}
 				});
 
-				// Central callback for when any cognitive test finishes
-				function onTestEnd(htmx) {
-					return function(results) {
-						const form = document.querySelector('#symptom-form');
-						if (form) {
-							const answerInput = form.querySelector('input[name="answer"]');
-							answerInput.value = JSON.stringify(results);
-							htmx.trigger(form, 'submit');
-						}
-					}
-				}
-
-				// --- Reusable Initializer Function ---
-				function initializeCognitiveTests(rootElement) {
-					const findAndInit = (targetId, initFunction) => {
-						const targetNode = rootElement.querySelector(`#${targetId}`);
-						if (targetNode) {
-							const settings = JSON.parse(targetNode.dataset.settings);
-							initFunction(targetNode.id, settings, onTestEnd(htmx));
-						}
-					};
-
-					findAndInit('cpt-container', initCPT);
-					findAndInit('dst-container', initDST);
-					findAndInit('tmt-container', initTMT);
-				}
-				
-				// --- MutationObserver to initialize tests added by HTMX ---
-				const contentArea = document.getElementById('content');
-				const observerCallback = (mutationsList, observer) => {
-					for (const mutation of mutationsList) {
-						if (mutation.type === 'childList') {
-							for (const node of mutation.addedNodes) {
-								if (node.nodeType === 1) { // Check if it's an element
-									initializeCognitiveTests(node);
-								}
+				if (document.body.dataset.isLoggedIn === 'true') {
+					// Central callback for when any cognitive test finishes
+					function onTestEnd(htmx) {
+						return function(results) {
+							const form = document.querySelector('#symptom-form');
+							if (form) {
+								const answerInput = form.querySelector('input[name="answer"]');
+								answerInput.value = JSON.stringify(results);
+								htmx.trigger(form, 'submit');
 							}
 						}
 					}
-				};
+					
+					// Reusable Initializer Function
+					function initializeCognitiveTests(node) {
+						if (!(node instanceof Element)) return;
 
-				const observer = new MutationObserver(observerCallback);
-				observer.observe(contentArea, { childList: true, subtree: true });
+						const findAndInit = (containerId, initFn) => {
+							const target = node.matches(`#${containerId}`) ? node : node.querySelector(`#${containerId}`);
+							if (target && target.dataset.initialized !== 'true') {
+								const settings = JSON.parse(target.dataset.settings);
+								initFn(target.id, settings, onTestEnd(htmx));
+								target.dataset.initialized = 'true';
+							}
+						};
 
-				// --- Initial check on page load ---
-				// Run the initializer on the whole document once the page is ready.
-				document.addEventListener('DOMContentLoaded', (event) => {
-					initializeCognitiveTests(document);
-				});
+						findAndInit('cpt-container', initCPT);
+						findAndInit('dst-container', initDST);
+						findAndInit('tmt-container', initTMT);
+					}
 
+					// Observer for content added by HTMX
+					const observer = new MutationObserver((mutationsList) => {
+						for (const mutation of mutationsList) {
+							for (const addedNode of mutation.addedNodes) {
+								initializeCognitiveTests(addedNode);
+							}
+						}
+					});
+					observer.observe(document.getElementById('content'), { childList: true, subtree: true });
+
+					// Initial check on page load
+					document.addEventListener('DOMContentLoaded', () => {
+						initializeCognitiveTests(document.body);
+					});
+				}
 			</script>		
 		</body>
 	</html>

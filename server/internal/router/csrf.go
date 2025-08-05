@@ -75,6 +75,14 @@ func CSRFProtection() gin.HandlerFunc {
 			}
 
 			if submittedToken == "" || submittedToken != realToken {
+				// If CSRF validation fails, check if it's an HTMX request.
+				if c.GetHeader("HX-Request") == "true" {
+					// If so, send the redirect header along with the 403 status.
+					c.Header("HX-Redirect", "/")
+					c.AbortWithStatus(http.StatusForbidden)
+					return
+				}
+				// Otherwise, just send the standard 403.
 				c.AbortWithError(http.StatusForbidden, errors.New("invalid CSRF token"))
 				return
 			}

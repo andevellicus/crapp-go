@@ -50,11 +50,17 @@ func AuthRequired(log *zap.Logger) gin.HandlerFunc {
 				zap.String("path", c.Request.URL.Path),
 				zap.String("ip", c.ClientIP()),
 			)
+
 			if c.GetHeader("HX-Request") == "true" {
+				// For HTMX requests, trigger a client-side event to stop scripts
+				// and then force a full page redirect.
 				c.Header("HX-Redirect", "/")
-			} else {
-				c.Redirect(http.StatusFound, "/")
+				c.AbortWithStatus(http.StatusForbidden)
+				return
 			}
+
+			// For standard browser requests, perform a server-side redirect.
+			c.Redirect(http.StatusFound, "/")
 			c.Abort()
 			return
 		}
