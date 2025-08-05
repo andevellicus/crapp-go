@@ -203,27 +203,31 @@ class InteractionTracker {
     }
     
     sendData() {
-        // --- NEW: Only send if there is data to send ---
         if (this.movements.length === 0 && this.interactions.length === 0 && this.keyboardEvents.length === 0) {
             return;
         }
+
+        const csrfTokenInput = document.querySelector('input[name="_csrf"]');
+        const csrfToken = csrfTokenInput ? csrfTokenInput.value : '';
 
         const data = this.getData();
         
         // Use `navigator.sendBeacon` for reliability when the page is unloading.
         // Fall back to fetch for other cases.
         const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-        if (navigator.sendBeacon) {
-            navigator.sendBeacon('/metrics', blob);
-        } else {
-            fetch('/metrics', {
-                method: 'POST',
-                body: blob,
-                keepalive: true
-            });
-        }
+        fetch('/metrics', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken // Include CSRF token for security
+            },
+            body: blob,
+            keepalive: true // Ensure the request completes even if the page is unloading
+        }).catch(error => {
+            console.error('Error sending metrics:', error);
+        });
 
-        // --- NEW: Reset after sending ---
+        // --- Reset after sending ---
         this.reset();
     }
     

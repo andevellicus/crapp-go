@@ -7,7 +7,7 @@ import (
 
 	"crapp-go/internal/models"
 	"crapp-go/internal/repository"
-	util "crapp-go/internal/utils"
+	"crapp-go/internal/utils"
 	"crapp-go/views"
 	"crapp-go/views/components"
 
@@ -26,7 +26,18 @@ func NewAuthHandler(log *zap.Logger, assessment *models.Assessment) *AuthHandler
 }
 
 func (h *AuthHandler) ShowLoginPage(c *gin.Context) {
-	views.Login().Render(c, c.Writer)
+	// Retrieve the token from the context set by our middleware.
+	// The key "csrf_token" must match the one used in CSRFProtection middleware.
+	csrfToken, exists := c.Get("csrf_token")
+	if !exists {
+		// This should not happen if the middleware is set up correctly.
+		// Abort or handle the error appropriately.
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	// Pass the CSRF token to the template.
+	views.Login(csrfToken.(string)).Render(c, c.Writer)
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
@@ -44,6 +55,16 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
+	// Best practice: Regenerate tokens upon a privilege change (e.g., login).
+	newToken, err := utils.GenerateSecureToken(32)
+	if err != nil {
+		h.log.Error("Failed to generate new CSRF token on login", zap.Error(err))
+		c.Status(http.StatusInternalServerError)
+		components.Alert("Internal server error.", "error").Render(c, c.Writer)
+		return
+	}
+	session.Set("csrf_token", newToken)
+
 	session.Set("userID", user.ID)
 	if err := session.Save(); err != nil {
 		h.log.Error("Failed to save session", zap.Error(err))
@@ -56,7 +77,16 @@ func (h *AuthHandler) Login(c *gin.Context) {
 }
 
 func (h *AuthHandler) ShowRegisterPage(c *gin.Context) {
-	err := views.Register().Render(c, c.Writer)
+	csrfToken, exists := c.Get("csrf_token")
+	if !exists {
+		// This should not happen if the middleware is set up correctly.
+		// Abort or handle the error appropriately.
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	// Pass the CSRF token to the template.
+	err := views.Register(csrfToken.(string)).Render(c, c.Writer)
 	if err != nil {
 		h.log.Error("Error rendering register page", zap.Error(err))
 		c.String(http.StatusInternalServerError, "Error rendering page")
@@ -76,14 +106,14 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	// 2. Validate Email Format
-	if !util.IsValidEmail(email) {
+	if !utils.IsValidEmail(email) {
 		c.Status(http.StatusBadRequest)
 		components.Alert("Please enter a valid email address.", "error").Render(c, c.Writer)
 		return
 	}
 
 	// 3. Validate Password Complexity
-	if !util.IsComplexPassword(password) {
+	if !utils.IsComplexPassword(password) {
 		c.Status(http.StatusBadRequest)
 		// This error will target the #password-error-container
 		components.Alert("Password does not meet complexity requirements.", "error").Render(c, c.Writer)
@@ -120,9 +150,13 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	h.log.Info("User registered successfully", zap.String("email", email))
-
+	csrfToken, exists := c.Get("csrf_token")
+	if !exists {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
 	// On success, render the login form so the user can sign in
-	err = views.Login().Render(c, c.Writer)
+	err = views.Login(csrfToken.(string)).Render(c, c.Writer)
 	if err != nil {
 		h.log.Error("Error rendering login component after registration", zap.Error(err))
 	}

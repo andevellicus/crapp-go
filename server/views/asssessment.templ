@@ -3,12 +3,14 @@ package views
 import (
 	"crapp-go/internal/models"
 	"crapp-go/views/components"
+	"crapp-go/views/components/cognitive"
 	"strconv"
 )
 
-templ AssessmentPage(question models.Question, currentIndex, totalQuestions int, errorMessage string, settingsJSON string) {
+templ AssessmentPage(question models.Question, currentIndex, totalQuestions int, errorMessage string, settingsJSON string, csrfToken string, cspNonce string) {
 	@components.Panel() {
 		<form hx-post="/assessment/next" hx-target="main#content" hx-swap="innerHTML" id="symptom-form" novalidate>
+			<input type="hidden" name="_csrf" value={ csrfToken } />
 			<input type="hidden" name="questionId" value={ question.ID }/>
 			
 			<div class="min-h-[80px]">
@@ -43,11 +45,11 @@ templ AssessmentPage(question models.Question, currentIndex, totalQuestions int,
 					
 					// The component is called with the settingsJSON string from the handler.
 					if question.Type == "cpt" {
-						@components.CPT(question.ID, settingsJSON)
+						@cognitive.CPT(question.ID, settingsJSON, cspNonce)
 					} else if question.Type == "dst" {
-						@components.DST(question.ID, settingsJSON)
+						@cognitive.DST(question.ID, settingsJSON, cspNonce)
 					} else if question.Type == "tmt" {
-						@components.TMT(question.ID, settingsJSON)
+						@cognitive.TMT(question.ID, settingsJSON, cspNonce)
 					}
 				}
 			</div>

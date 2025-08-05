@@ -1,5 +1,6 @@
 server:
   port: "5050"
+  # session_secret: "supersecret"          Set in .env file
 
 database:
   host: "db"

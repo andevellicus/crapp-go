@@ -52,12 +52,23 @@ func (h *AssessmentHandler) Start(c *gin.Context, isHTMX bool) {
 	// Prepare settings JSON in the handler.
 	settingsJSON := h.prepareSettingsJSON(currentQuestion)
 
-	component := views.AssessmentPage(currentQuestion, state.CurrentQuestionIndex, len(state.QuestionOrder), "", settingsJSON)
+	csrfToken, exists := c.Get("csrf_token")
+	if !exists {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	cspNonce, exists := c.Get("csp_nonce")
+	if !exists {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	component := views.AssessmentPage(currentQuestion, state.CurrentQuestionIndex, len(state.QuestionOrder), "", settingsJSON, csrfToken.(string), cspNonce.(string))
 
 	if isHTMX {
 		component.Render(c.Request.Context(), c.Writer)
 	} else {
-		views.Layout("Assessment", true).Render(templ.WithChildren(c.Request.Context(), component), c.Writer)
+		views.Layout("Assessment", true, csrfToken.(string), cspNonce.(string)).Render(templ.WithChildren(c.Request.Context(), component), c.Writer)
 	}
 }
 
@@ -124,8 +135,20 @@ func (h *AssessmentHandler) NextQuestion(c *gin.Context) {
 	default:
 		if currentQuestion.Required && answer == "" {
 			errorMessage := "This question is required. Please select an answer."
-			// Re-render the same page with an error message
-			views.AssessmentPage(currentQuestion, state.CurrentQuestionIndex, len(state.QuestionOrder), errorMessage, "").Render(c, c.Writer)
+
+			// Get the CSRF token to pass back to the template
+			csrfToken, exists := c.Get("csrf_token")
+			if !exists {
+				c.AbortWithStatus(http.StatusInternalServerError)
+				return
+			}
+			cspNonce, exists := c.Get("csp_nonce")
+			if !exists {
+				c.AbortWithStatus(http.StatusInternalServerError)
+				return
+			}
+			// Re-render the same page with an error message AND the CSRF token
+			views.AssessmentPage(currentQuestion, state.CurrentQuestionIndex, len(state.QuestionOrder), errorMessage, "", csrfToken.(string), cspNonce.(string)).Render(c, c.Writer)
 			return // Stop processing
 		}
 		if err := repository.SaveAnswer(state.ID, questionID, answer); err != nil {
@@ -145,7 +168,18 @@ func (h *AssessmentHandler) NextQuestion(c *gin.Context) {
 	} else {
 		nextQuestion := h.Assessment.Questions[state.QuestionOrder[nextIndex]]
 		settingsJSON := h.prepareSettingsJSON(nextQuestion)
-		views.AssessmentPage(nextQuestion, nextIndex, len(state.QuestionOrder), "", settingsJSON).Render(c, c.Writer)
+		csrfToken, exists := c.Get("csrf_token")
+		if !exists {
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		cspNonce, exists := c.Get("csp_nonce")
+		if !exists {
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		views.AssessmentPage(nextQuestion, nextIndex, len(state.QuestionOrder), "", settingsJSON, csrfToken.(string), cspNonce.(string)).Render(c, c.Writer)
 	}
 }
 
@@ -178,8 +212,17 @@ func (h *AssessmentHandler) PreviousQuestion(c *gin.Context) {
 
 	prevQuestion := h.Assessment.Questions[state.QuestionOrder[prevIndex]]
 	settingsJSON := h.prepareSettingsJSON(prevQuestion)
-
-	views.AssessmentPage(prevQuestion, prevIndex, len(state.QuestionOrder), "", settingsJSON).Render(c, c.Writer)
+	csrfToken, exists := c.Get("csrf_token")
+	if !exists {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	cspNonce, exists := c.Get("csp_nonce")
+	if !exists {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	views.AssessmentPage(prevQuestion, prevIndex, len(state.QuestionOrder), "", settingsJSON, csrfToken.(string), cspNonce.(string)).Render(c, c.Writer)
 }
 
 func (h *AssessmentHandler) prepareSettingsJSON(question models.Question) string {

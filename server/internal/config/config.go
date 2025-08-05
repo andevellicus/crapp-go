@@ -22,7 +22,8 @@ type Config struct {
 
 // ServerConfig holds server-related settings.
 type ServerConfig struct {
-	Port string `mapstructure:"port"`
+	Port          string `mapstructure:"port"`
+	SessionSecret string `mapstructure:"session_secret"`
 }
 
 // DatabaseConfig holds database connection settings.
@@ -47,6 +48,7 @@ type LoggingConfig struct {
 func setDefaults(v *viper.Viper) {
 	// Server defaults
 	v.SetDefault("server.port", "5050")
+	v.SetDefault("server.session_secret", "secret")
 
 	// Database defaults
 	v.SetDefault("database.host", "db")

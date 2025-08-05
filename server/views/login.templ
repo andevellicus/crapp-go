@@ -2,7 +2,7 @@ package views
 
 import "crapp-go/views/components"
 
-templ Login() {
+templ Login(csrfToken string) {
 	@components.Panel() {
 		<div class="mx-auto max-w-sm">
 			<h1 class="page-title">Login</h1>
@@ -15,6 +15,7 @@ templ Login() {
 				hx-target-401="#login-error-container"
 				novalidate
 			>
+				<input type="hidden" name="_csrf" value={ csrfToken } />
 				@components.FormField("email", "email", "Email", "email", true)
 				@components.FormField("password", "password", "Password", "password", true)
 
