@@ -1,5 +1,7 @@
 # questions.yaml - Define symptom questions for CRAPP
 # This file defines all symptom questions, their type, and possible answers
+# Scales should use a radio type, otherwise multiple choice non scale questions
+# should use drop down (i.e., medication changes)
 
 # Questions definitions
 questions:
@@ -145,7 +147,7 @@ questions:
     title: Digit Span Test
     description: Measures short-term memory. Remember the sequence of digits shown.
     type: dst 
-    metrics_type: dst 
+    metrics_type: mouse
     required: false 
     # Optional settings can be added here later if needed
     options:
@@ -172,7 +174,7 @@ questions:
     title: Continuous Performance Test
     description: This test measures your sustained attention and response control. You'll see letters appearing on screen and need to respond only to the target letter.
     type: cpt
-    metrics_type: cpt
+    metrics_type: mouse 
     required: false 
     options:
       - value: 30000 # Time in milliseconds
@@ -192,7 +194,7 @@ questions:
     title: Trail Making Test
     description: This test measures visual attention and task switching. You'll connect a series of numbers (Part A) or alternate between numbers and letters (Part B) in ascending order.
     type: tmt
-    metrics_type: tmt
+    metrics_type: mouse
     required: false 
     options:
       - value: 20000 # Time limit for Part A

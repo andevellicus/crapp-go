@@ -12,7 +12,6 @@ class InteractionTracker {
         this.lastRecordedTime = 0;
         this.throttleInterval = 50; // Record at most every 50ms
         
-        // --- NEW: Periodic Sending ---
         this.sendInterval = 30000; // Send data every 30 seconds
         this.intervalId = null;
 
@@ -30,7 +29,7 @@ class InteractionTracker {
         document.addEventListener('keydown', this.keyDownListener);
         document.addEventListener('keyup', this.keyUpListener);
         
-        // --- NEW: Listen for HTMX navigation to send data before swapping content ---
+        // Listen for HTMX navigation to send data before swapping content ---
         document.body.addEventListener('htmx:beforeSwap', () => {
             this.sendData();
             this.reset();
@@ -43,7 +42,7 @@ class InteractionTracker {
         
         this.mutationObserver.observe(document.body, { childList: true, subtree: true });
         
-        // --- NEW: Start periodic sending ---
+        //  Start periodic sending ---
         this.intervalId = setInterval(() => this.sendData(), this.sendInterval);
         
         this.findInteractiveElements();
@@ -63,7 +62,7 @@ class InteractionTracker {
             this.intersectionObservers.forEach(observer => observer.disconnect());
         }
 
-        // --- NEW: Stop periodic sending to prevent memory leaks ---
+        // Stop periodic sending to prevent memory leaks ---
         if (this.intervalId) {
             clearInterval(this.intervalId);
         }
@@ -207,14 +206,18 @@ class InteractionTracker {
             return;
         }
 
-        const csrfTokenInput = document.querySelector('input[name="_csrf"]');
-        const csrfToken = csrfTokenInput ? csrfTokenInput.value : '';
+        const metaTag = document.querySelector('meta[name="csrf-token"]');
+        const csrfToken = metaTag ? metaTag.getAttribute('content') : '';
+
+        if (!csrfToken) {
+            console.warn("CSRF token not found. Metric will not be sent.");
+        }
 
         const data = this.getData();
-        
         // Use `navigator.sendBeacon` for reliability when the page is unloading.
         // Fall back to fetch for other cases.
         const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+
         fetch('/metrics', {
             method: 'POST',
             headers: {

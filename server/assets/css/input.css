@@ -69,6 +69,14 @@
     animation: fadeInOut 5s ease-in-out forwards;
   }
 
+  .metrics-help h3 {
+    @apply text-2xl text-center font-bold mb-4 text-primary;
+  }
+
+  .metrics-help ul {
+    @apply list-disc ml-5 mt-2;
+  }
+
   /* Assessment form styles */
   .progress-indicator {
       @apply text-sm text-gray-400 mb-6 text-center;

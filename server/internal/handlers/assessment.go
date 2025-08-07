@@ -43,7 +43,8 @@ func (h *AssessmentHandler) Start(c *gin.Context, isHTMX bool) {
 
 	// If the assessment is already complete, show the results.
 	if state.CurrentQuestionIndex >= len(state.QuestionOrder) {
-		h.showResults(c, state.ID)
+		c.Header("HX-Redirect", "/assessment/results")
+		c.AbortWithStatus(http.StatusOK)
 		return
 	}
 
@@ -164,7 +165,8 @@ func (h *AssessmentHandler) NextQuestion(c *gin.Context) {
 
 	if nextIndex >= len(state.QuestionOrder) {
 		repository.CompleteAssessment(state.ID)
-		h.showResults(c, state.ID)
+		c.Header("HX-Redirect", "/assessment/results")
+		c.AbortWithStatus(http.StatusOK)
 	} else {
 		nextQuestion := h.Assessment.Questions[state.QuestionOrder[nextIndex]]
 		settingsJSON := h.prepareSettingsJSON(nextQuestion)
@@ -227,7 +229,7 @@ func (h *AssessmentHandler) PreviousQuestion(c *gin.Context) {
 
 func (h *AssessmentHandler) prepareSettingsJSON(question models.Question) string {
 	if question.Type != "cpt" && question.Type != "dst" && question.Type != "tmt" {
-		return "" // No settings needed for standard questions
+		return "{}" // No settings needed for standard questions, but return valid JSON
 	}
 	settings := make(map[string]interface{})
 	for _, option := range question.Options {
@@ -239,17 +241,6 @@ func (h *AssessmentHandler) prepareSettingsJSON(question models.Question) string
 		return "{}" // Return empty JSON object on error
 	}
 	return string(settingsJSON)
-}
-
-// showResults renders the final assessment results page.
-func (h *AssessmentHandler) showResults(c *gin.Context, assessmentID int) {
-	answers, err := repository.GetAnswersForAssessment(assessmentID)
-	if err != nil {
-		h.log.Error("Error getting answers for results page", zap.Error(err), zap.Int("assessmentID", assessmentID))
-		c.String(http.StatusInternalServerError, "Could not load assessment results.")
-		return
-	}
-	views.AssessmentResults(answers).Render(c, c.Writer)
 }
 
 // --- Data Processing Helpers ---

@@ -10,6 +10,7 @@ require (
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/gin-contrib/sessions v1.0.1
 	github.com/gin-gonic/gin v1.10.1
+	github.com/go-echarts/go-echarts/v2 v2.6.1
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/lib/pq v1.10.9
 	github.com/spf13/viper v1.20.1

@@ -3,13 +3,18 @@ package common
 import "crapp-go/views/components"
 
 templ Nav(isLoggedIn bool) {
-	<nav id="main-nav" class="nav-bar" hx-get="/nav" hx-trigger="logout from:body, login from:body" hx-target="#main-nav" hx-swap="outerHTML">
-		<div class="flex w-full items-center justify-end space-x-4 p-4">
+	<nav id="main-nav" class="nav-bar flex items-center justify-between p-4" hx-get="/nav" hx-trigger="logout from:body, login from:body" hx-target="#main-nav" hx-swap="outerHTML">
+		<div class="flex items-center space-x-4">
 			if isLoggedIn {
 				@components.Button("Home", "/assessment", "", "", "", "secondary-button", "")
+				@components.Button("Results", "/assessment/results", "", "", "", "secondary-button", "")
+			}
+		</div>
+		<div class="flex items-center justify-end space-x-4">
+			if isLoggedIn {
 				@components.Button("Logout", "", "/logout", "#content", "", "secondary-button", "")
 			} else {
-				@components.Button("Login", "/login", "", "",  "", "secondary-button", "")
+				@components.Button("Login", "/login", "", "", "", "secondary-button", "")
 			}
 		</div>
 	</nav>

@@ -1,0 +1,169 @@
+// server/views/results_chart.templ
+package views
+
+import "crapp-go/internal/models"
+
+templ ResultsCharts(questionGroups map[string][]models.Question, availableMetrics []models.MetricOption, selectedSymptom, selectedMetric, timelineOptions, correlationOptions, cspNonce, metricsTypeForExplanation string, showCorrelationChart bool) {
+	<div class="p-8">
+		<h1 class="page-title">Your Results</h1>
+
+		<div
+			class="controls p-4 bg-gray-50 rounded-lg mb-8"
+			hx-get="/assessment/results"
+			hx-trigger="change from:#symptom-select, change from:#metric-select"
+			hx-target="main#content"
+			hx-swap="innerHTML"
+			hx-include="[name='symptom'], [name='metric']"
+		>
+			<div class="grid grid-cols-2 gap-4">
+				<div class="control-group">
+					<label for="symptom-select" class="block text-sm font-medium text-gray-700">Symptom Question/Task:</label>
+					<select id="symptom-select" name="symptom" class="select-input mt-1 block w-full">
+						if group, ok := questionGroups["symptom"]; ok {
+							<optgroup label="Symptoms">
+								for _, q := range group {
+									<option value={ q.ID } selected?={ q.ID == selectedSymptom }>{ q.Title }</option>
+								}
+							</optgroup>
+						}
+						if group, ok := questionGroups["mouse"]; ok {
+							<optgroup label="Mouse Input Questions">
+								for _, q := range group {
+									<option value={ q.ID } selected?={ q.ID == selectedSymptom }>{ q.Title }</option>
+								}
+							</optgroup>
+						}
+						if group, ok := questionGroups["keyboard"]; ok {
+							<optgroup label="Keyboard Input Questions">
+								for _, q := range group {
+									<option value={ q.ID } selected?={ q.ID == selectedSymptom }>{ q.Title }</option>
+								}
+							</optgroup>
+						}
+						if group, ok := questionGroups["cpt"]; ok {
+							<optgroup label="Continuous Performance Test">
+								for _, q := range group {
+									<option value={ q.ID } selected?={ q.ID == selectedSymptom }>{ q.Title }</option>
+								}
+							</optgroup>
+						}
+						if group, ok := questionGroups["tmt"]; ok {
+							<optgroup label="Trail Making Test">
+								for _, q := range group {
+									<option value={ q.ID } selected?={ q.ID == selectedSymptom }>{ q.Title }</option>
+								}
+							</optgroup>
+						}
+						if group, ok := questionGroups["dst"]; ok {
+							<optgroup label="Digit Span Test">
+								for _, q := range group {
+									<option value={ q.ID } selected?={ q.ID == selectedSymptom }>{ q.Title }</option>
+								}
+							</optgroup>
+						}
+					</select>
+				</div>
+				<div class="control-group">
+					<label for="metric-select" class="block text-sm font-medium text-gray-700">Metric:</label>
+					<select id="metric-select" name="metric" class="select-input mt-1 block w-full">
+						for _, metric := range availableMetrics {
+							<option value={ metric.Value } selected?={ metric.Value == selectedMetric }>{ metric.Label }</option>
+						}
+					</select>
+				</div>
+			</div>
+		</div>
+
+		<div class="grid grid-cols-1 gap-8">
+			<div
+				class="chart-container"
+				id="timeline-chart"
+				style="width: 100%; height: 400px; background: #f5f5f5;"
+				data-options={ timelineOptions }
+				hx-trigger="load delay:200ms"
+				hx-on::htmx:trigger="window.initializeCharts && window.initializeCharts()"
+			>
+				<div style="padding: 20px; text-align: center; color: #999;">Loading chart...</div>
+			</div>
+
+			if showCorrelationChart {
+				<div
+					class="chart-container"
+					id="correlation-chart"
+					style="width: 100%; height: 400px; background: #f5f5f5;"
+					hx-trigger="load delay:200ms"
+					data-options={ correlationOptions }
+				>
+					<div style="padding: 20px; text-align: center; color: #999;">Loading chart...</div>
+				</div>
+			}
+		</div>
+
+		<div class="mt-8 p-4 bg-gray-50 rounded-lg">
+			@MetricsExplanation(metricsTypeForExplanation, selectedMetric)
+		</div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+	<script src="/assets/js/charts.js"></script>
+}
+
+templ MetricsExplanation(metricsType string, selectedMetric string) {
+	switch metricsType {
+		case "tmt":
+			<div class="metrics-help">
+				<h3>Understanding Trail Making Test Timeline Chart</h3>
+				<p>The Trail Making Test timeline shows how performance changes over time. Each data point represents a completed test.</p>
+				<ul>
+					<li><strong>Part A Time (ms):</strong> Time to connect numbers in ascending order. Lower values indicate better processing speed.</li>
+					<li><strong>Part B Time (ms):</strong> Time to connect alternating numbers and letters. Lower values indicate better cognitive flexibility.</li>
+					<li><strong>B/A Ratio:</strong> Ratio of Part B to Part A time. Values closer to 1 indicate better executive function.</li>
+					<li><strong>Part A Errors:</strong> Number of incorrect connections in Part A. Lower values indicate better attention.</li>
+					<li><strong>Part B Errors:</strong> Number of incorrect connections in Part B. Lower values indicate better executive function.</li>
+				</ul>
+			</div>
+		case "cpt":
+			<div class="metrics-help">
+				<h3>Understanding CPT Timeline Chart</h3>
+				<p>The Continuous Performance Test (CPT) timeline shows how cognitive performance changes over time. Each data point represents a completed test.</p>
+				<ul>
+					<li><strong>Reaction Time (ms):</strong> Average time to respond to target stimuli. Lower values indicate faster processing speed.</li>
+					<li><strong>Detection Rate (%):</strong> Percentage of correct responses to targets. Higher values indicate better sustained attention.</li>
+					<li><strong>Omission Error Rate (%):</strong> Percentage of missed targets. Higher values suggest inattention or distractibility.</li>
+					<li><strong>Commission Error Rate (%):</strong> Percentage of responses to non-targets. Higher values suggest impulsivity or poor inhibitory control.</li>
+				</ul>
+			</div>
+		case "keyboard":
+			<div class="metrics-help">
+				<h3>Understanding Keyboard Metrics</h3>
+				<ul>
+					<li><strong>Typing Speed:</strong> Characters per second typed (higher indicates faster typing)</li>
+					<li><strong>Inter-Key Interval:</strong> Average time between keypresses in milliseconds (lower indicates faster typing)</li>
+					<li><strong>Typing Rhythm Variability:</strong> Consistency of typing rhythm (lower indicates more consistent typing)</li>
+					<li><strong>Correction Rate:</strong> Frequency of backspace/delete usage (indicates error correction)</li>
+					<li><strong>Keyboard Fluency Score:</strong> Overall typing proficiency score combining multiple metrics (higher is better)</li>
+				</ul>
+			</div>
+		case "digit_span":
+			<div class="metrics-help">
+				<h3>Understanding Digit Span Test Timeline Chart</h3>
+				<p>The Digit Span Test timeline shows performance over time. Each data point represents a completed test.</p>
+				<ul>
+					<li><strong>Highest Span Achieved:</strong> The maximum number of digits correctly recalled in sequence. Higher values indicate better short-term memory capacity.</li>
+					<li><strong>Correct Trials:</strong> The total number of sequences correctly recalled across all span lengths attempted.</li>
+					<li><strong>Total Trials:</strong> The total number of sequences presented to the user during the test.</li>
+				</ul>
+			</div>
+		default:
+			<div class="metrics-help">
+				<h3>Understanding Mouse Metrics</h3>
+				<ul>
+					<li><strong>Click Precision:</strong> How accurately the user clicks on targets (higher is better)</li>
+					<li><strong>Path Efficiency:</strong> How directly the mouse moves to targets (higher is better)</li>
+					<li><strong>Overshoot Rate:</strong> How often the user overshoots targets (lower is better)</li>
+					<li><strong>Average Velocity:</strong> How quickly the mouse moves (can indicate focus or cognitive load)</li>
+					<li><strong>Velocity Variability:</strong> How consistent the mouse movement speed is (lower can indicate better motor control)</li>
+				</ul>
+			</div>
+	}
+}

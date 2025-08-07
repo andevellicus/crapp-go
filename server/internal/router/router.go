@@ -33,7 +33,6 @@ func Setup(log *zap.Logger, assessment *models.Assessment) *gin.Engine {
 	router.Use(gin.Recovery())
 	router.Use(RequestLogger(log))
 
-	// --- FIX: Initialize session middleware BEFORE other middleware that uses it ---
 	store := cookie.NewStore([]byte(config.Conf.Server.SessionSecret))
 	store.Options(sessions.Options{
 		Path:     "/",
@@ -55,7 +54,7 @@ func Setup(log *zap.Logger, assessment *models.Assessment) *gin.Engine {
 		if !isHTMX {
 			nonce, _ := c.Get(CspNonceContextKey)
 			csp := fmt.Sprintf(
-				"script-src 'self' https://unpkg.com 'nonce-%s'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com",
+				"script-src 'self' https://unpkg.com https://cdn.jsdelivr.net 'nonce-%s'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com",
 				nonce,
 			)
 			c.Header("Content-Security-Policy", csp)
@@ -82,6 +81,7 @@ func Setup(log *zap.Logger, assessment *models.Assessment) *gin.Engine {
 	authHandler := handlers.NewAuthHandler(log, assessment)
 	assessmentHandler := handlers.NewAssessmentHandler(log, assessment)
 	metricsHandler := handlers.NewMetricsHandler(log)
+	resultsHandler := handlers.NewResultsHandler(log, assessment)
 
 	rateLimitStore := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
 		Rate:  time.Minute,
@@ -133,6 +133,7 @@ func Setup(log *zap.Logger, assessment *models.Assessment) *gin.Engine {
 		})
 		authorized.POST("/prev", assessmentHandler.PreviousQuestion)
 		authorized.POST("/next", assessmentHandler.NextQuestion)
+		authorized.GET("/results", resultsHandler.ShowResults)
 	}
 
 	return router
