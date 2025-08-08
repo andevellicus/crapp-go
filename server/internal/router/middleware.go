@@ -20,7 +20,7 @@ func UserLoaderMiddleware(log *zap.Logger) gin.HandlerFunc {
 			return
 		}
 
-		user, err := repository.GetUserByID(c.Request.Context(), userID)
+		user, err := repository.GetUserByID(c.Request.Context(), uint(userID))
 		if err != nil {
 			// User ID from session is invalid (user was deleted, etc.)
 			log.Warn("Invalid user ID in session, clearing.",
@@ -36,7 +36,7 @@ func UserLoaderMiddleware(log *zap.Logger) gin.HandlerFunc {
 		}
 
 		// User is valid, store user object in context for other handlers.
-		log.Debug("User loaded from session and added to context.", zap.Int("userID", user.ID))
+		log.Debug("User loaded from session and added to context.", zap.Int("userID", int(user.ID)))
 		c.Set("user", user)
 		c.Next()
 	}

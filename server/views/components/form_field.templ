@@ -1,8 +1,8 @@
 package components
 
-templ FormField(id, name, label, inputType string, required bool) {
+templ FormField(id, name, label, inputType, value string, required bool) {
 	<div class="mb-4">
 		<label for={ id } class="block text-gray-700 text-sm font-bold mb-2">{ label }</label>
-		<input id={ id } name={ name } type={ inputType } class="text-input" required?={ required }/>
+		<input id={ id } name={ name } type={ inputType } class="text-input" value={ value } required?={ required } autocomplete="off"/>
 	</div>
 }

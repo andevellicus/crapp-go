@@ -82,6 +82,7 @@ func Setup(log *zap.Logger, assessment *models.Assessment) *gin.Engine {
 	assessmentHandler := handlers.NewAssessmentHandler(log, assessment)
 	metricsHandler := handlers.NewMetricsHandler(log)
 	resultsHandler := handlers.NewResultsHandler(log, assessment)
+	userHandler := handlers.NewUserHandler(log)
 
 	rateLimitStore := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
 		Rate:  time.Minute,
@@ -124,16 +125,31 @@ func Setup(log *zap.Logger, assessment *models.Assessment) *gin.Engine {
 	router.POST("/register", limiter, authHandler.Register)
 	router.POST("/metrics", metricsHandler.SaveMetrics)
 
-	authorized := router.Group("/assessment")
+	authorized := router.Group("/")
 	authorized.Use(AuthRequired(log))
 	{
-		authorized.GET("", func(c *gin.Context) {
-			isHTMX := c.GetHeader("HX-Request") == "true"
-			assessmentHandler.Start(c, isHTMX)
-		})
-		authorized.POST("/prev", assessmentHandler.PreviousQuestion)
-		authorized.POST("/next", assessmentHandler.NextQuestion)
-		authorized.GET("/results", resultsHandler.ShowResults)
+		assessmentRoutes := authorized.Group("/assessment")
+		{
+			assessmentRoutes.GET("", func(c *gin.Context) {
+				isHTMX := c.GetHeader("HX-Request") == "true"
+				assessmentHandler.Start(c, isHTMX)
+			})
+			assessmentRoutes.POST("/prev", assessmentHandler.PreviousQuestion)
+			assessmentRoutes.POST("/next", assessmentHandler.NextQuestion)
+			assessmentRoutes.GET("/results", resultsHandler.ShowResults)
+		}
+
+		profileRoutes := authorized.Group("/profile")
+		{
+			// Point both routes to the SAME handler
+			profileRoutes.GET("", userHandler.ShowProfilePage)
+			profileRoutes.GET("/:section", userHandler.ShowProfilePage)
+
+			// POST routes for form submissions remain the same
+			profileRoutes.POST("/update-info", userHandler.UpdateInfo)
+			profileRoutes.POST("/update-password", userHandler.UpdatePassword)
+			profileRoutes.POST("/delete", userHandler.DeleteAccount)
+		}
 	}
 
 	return router

@@ -110,8 +110,8 @@ function initCPT(containerId, settings, onTestEnd) {
             if (remainingTime <= 0) endTest();
         }, 1000);
         
-        // Start the stimulus presentation loop
-        presentStimulus();
+        // **THE FIX IS HERE:** Delay the start of the stimulus presentation.
+        setTimeout(presentStimulus, interStimulusInterval);
     }
 
     function endTest() {

@@ -1,0 +1,30 @@
+package views
+
+import "crapp-go/internal/models"
+import "crapp-go/views/components"
+import "crapp-go/views/profile"
+
+templ Profile(user *models.User, csrfToken string, activeSection string) {
+	@components.Panel() {
+		<div id="profile-container">
+			<h1 class="page-title">Profile</h1>
+			<div class="profile-container">
+				<div class="profile-sidebar">
+					@profile.ProfileNav(activeSection, false)
+				</div>
+				<div id="profile-content" class="profile-content">
+					switch activeSection {
+						case "personal":
+							@profile.PersonalInfo(user, csrfToken)
+						case "password":
+							@profile.PasswordForm(csrfToken)
+						case "danger":
+							@profile.DangerZone(csrfToken)
+						default:
+							@profile.PersonalInfo(user, csrfToken)
+					}
+				</div>
+			</div>
+		</div>
+	}
+}

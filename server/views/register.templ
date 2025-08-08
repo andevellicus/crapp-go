@@ -14,22 +14,23 @@ templ Register(csrfToken string) {
 				novalidate
 			>
 				<input type="hidden" name="_csrf" value={ csrfToken } />
-
-				@components.FormField("email", "email", "Email", "email", true)
+				@components.FormField("first_name", "first_name", "First Name", "text", "", true)
+				@components.FormField("last_name", "last_name", "Last Name", "text", "", true)
+				@components.FormField("email", "email", "Email", "email", "", true)
 				<br />
 				<p class="text-sm text-gray-400 mt-1 mb-2">
 				Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.
-				</p>
+</p>
 				<br />			
 
 				<div hx-target-400="#password-error-container">
-					@components.FormField("password", "password", "Password", "password", true)
+					@components.FormField("password", "password", "Password", "password", "", true)
 
 					<div id="password-error-container" class="min-h-[20px]"></div>
 				</div>
 
 				<div hx-target-400="#password-match-error">
-					@components.FormField("confirmPassword", "confirmPassword", "Confirm Password", "password", true)
+					@components.FormField("confirmPassword", "confirmPassword", "Confirm Password", "password", "", true)
 					<div id="password-match-error" class="min-h-[20px]"></div>
 				</div>
 

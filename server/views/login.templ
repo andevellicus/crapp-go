@@ -16,8 +16,8 @@ templ Login(csrfToken string) {
 				novalidate
 			>
 				<input type="hidden" name="_csrf" value={ csrfToken } />
-				@components.FormField("email", "email", "Email", "email", true)
-				@components.FormField("password", "password", "Password", "password", true)
+				@components.FormField("email", "email", "Email", "email", "", true)
+				@components.FormField("password", "password", "Password", "password", "", true)
 
 				<div class="flex items-center justify-between mt-6">
 					<button type="submit" class="green-button w-full">

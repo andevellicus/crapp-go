@@ -1,0 +1,53 @@
+package profile
+
+templ ProfileNav(activeSection string, isOobSwap bool) {
+	<nav id="profile-nav-menu" class="flex flex-col space-y-2" if isOobSwap { hx-swap-oob="true" } >
+		// Personal Info Link
+		if activeSection == "personal" {
+			<a href="/profile/personal" class="primary-button w-full text-center">Personal Info</a>
+		} else {
+			<a
+				href="/profile/personal"
+				class="secondary-button w-full text-center"
+				hx-get="/profile/personal"
+				hx-target="#profile-content"
+				hx-swap="innerHTML"
+				hx-push-url="true"
+			>
+				Personal Info
+			</a>
+		}
+
+		// Password Link
+		if activeSection == "password" {
+			<a href="/profile/password" class="primary-button w-full text-center">Password</a>
+		} else {
+			<a
+				href="/profile/password"
+				class="secondary-button w-full text-center"
+				hx-get="/profile/password"
+				hx-target="#profile-content"
+				hx-swap="innerHTML"
+				hx-push-url="true"
+			>
+				Password
+			</a>
+		}
+
+		// Danger Zone Link
+		if activeSection == "danger" {
+			<a href="/profile/danger" class="red-button w-full text-center">Delete Account</a>
+		} else {
+			<a
+				href="/profile/danger"
+				class="secondary-button !border-red-600 !text-red-600 hover:!bg-red-100 w-full text-center"
+				hx-get="/profile/danger"
+				hx-target="#profile-content"
+				hx-swap="innerHTML"
+				hx-push-url="true"
+			>
+				Delete Account
+			</a>
+		}
+	</nav>
+}

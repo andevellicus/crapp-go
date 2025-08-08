@@ -38,7 +38,8 @@ func (h *MetricsHandler) SaveMetrics(c *gin.Context) {
 
 	calculatedMetrics := metrics.CalculateInteractionMetrics(&interactionData)
 
-	state, err := repository.GetOrCreateAssessmentState(userID, 0) // Assuming we can get the state without question count
+	// **THE FIX IS HERE: Use the new function to get the most recent assessment.**
+	state, err := repository.GetMostRecentAssessmentState(uint(userID))
 	if err != nil {
 		h.log.Error("Failed to get assessment state", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get assessment state"})
@@ -46,14 +47,14 @@ func (h *MetricsHandler) SaveMetrics(c *gin.Context) {
 	}
 
 	for _, metric := range calculatedMetrics.GlobalMetrics {
-		metric.AssessmentID = state.ID
+		metric.AssessmentID = uint(state.ID)
 		if err := repository.SaveMetric(metric); err != nil {
 			h.log.Error("Failed to save global metric", zap.Error(err))
 		}
 	}
 
 	for _, metric := range calculatedMetrics.QuestionMetrics {
-		metric.AssessmentID = state.ID
+		metric.AssessmentID = uint(state.ID)
 		if err := repository.SaveMetric(metric); err != nil {
 			h.log.Error("Failed to save question metric", zap.Error(err))
 		}

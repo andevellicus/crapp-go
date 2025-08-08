@@ -3,12 +3,15 @@ package models
 import (
 	"encoding/json"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // TMTResult holds the processed metrics from a Trail Making Test.
 type TMTResult struct {
-	ID                  int
-	AssessmentID        int
+	gorm.Model
+	AssessmentID        uint
+	Assessment          AssessmentState `gorm:"foreignKey:AssessmentID"`
 	PartACompletionTime float64
 	PartAErrors         int
 	PartBCompletionTime float64
@@ -20,8 +23,9 @@ type TMTResult struct {
 
 // TMTClick represents a single click event during a Trail Making Test.
 type TMTClick struct {
-	ID          int
-	ResultID    int
+	gorm.Model
+	ResultID    uint
+	Result      TMTResult `gorm:"foreignKey:ResultID"`
 	X           float64
 	Y           float64
 	Time        float64

@@ -1,12 +1,9 @@
 package metrics
 
 import (
-	"time"
-
 	"crapp-go/internal/models"
 )
 
-// ... (MetricResult and CalculatedMetrics structs remain the same) ...
 type MetricResult struct {
 	Value      float64 `json:"value"`
 	Calculated bool    `json:"calculated"`
@@ -25,7 +22,6 @@ func CalculateInteractionMetrics(interactions *models.InteractionData) *Calculat
 		QuestionMetrics: []models.AssessmentMetric{},
 	}
 
-	// --- NEW LOGIC: Partition data into global and per-question buckets ---
 	globalInteractions := &models.InteractionData{}
 	questionInteractions := make(map[string]*models.InteractionData)
 
@@ -83,7 +79,6 @@ func CalculateInteractionMetrics(interactions *models.InteractionData) *Calculat
 				MetricKey:   metricKey,
 				MetricValue: metricResult.Value,
 				SampleSize:  metricResult.SampleSize,
-				CreatedAt:   time.Now(),
 			})
 		}
 	}
@@ -112,7 +107,6 @@ func CalculateInteractionMetrics(interactions *models.InteractionData) *Calculat
 					MetricKey:   metricKey,
 					MetricValue: metricResult.Value,
 					SampleSize:  metricResult.SampleSize,
-					CreatedAt:   time.Now(),
 				})
 			}
 		}

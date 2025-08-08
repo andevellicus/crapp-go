@@ -1,0 +1,23 @@
+package profile
+
+import "crapp-go/internal/models"
+
+// ProfileUpdate is used to send a multi-part HTMX response, updating
+// both the main profile content area and the sidebar navigation menu.
+templ ProfileUpdate(user *models.User, csrfToken string, activeSection string) {
+	// This renders the <nav> element with hx-swap-oob="true", targeting
+	// the existing #profile-nav-menu element in the DOM for an in-place swap.
+	@ProfileNav(activeSection, true)
+
+	// This is the main content for the original target (#profile-content).
+	switch activeSection {
+	case "personal":
+		@PersonalInfo(user, csrfToken)
+	case "password":
+		@PasswordForm(csrfToken)
+	case "danger":
+		@DangerZone(csrfToken)
+	default:
+		@PersonalInfo(user, csrfToken)
+	}
+}

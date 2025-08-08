@@ -3,12 +3,15 @@ package models
 import (
 	"encoding/json"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // DSTResult holds the processed metrics from a Digit Span test.
 type DSTResult struct {
-	ID                  int
-	AssessmentID        int
+	gorm.Model
+	AssessmentID        uint
+	Assessment          AssessmentState `gorm:"foreignKey:AssessmentID"`
 	HighestSpanAchieved int
 	TotalTrials         int
 	CorrectTrials       int
@@ -18,8 +21,9 @@ type DSTResult struct {
 
 // DSTAttempt represents a single trial within a Digit Span Test.
 type DSTAttempt struct {
-	ID        int
-	ResultID  int
+	gorm.Model
+	ResultID  uint
+	Result    DSTResult `gorm:"foreignKey:ResultID"`
 	Span      int
 	Trial     int
 	Sequence  string

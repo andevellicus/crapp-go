@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"database/sql"
 	"net/http"
 	"strings"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type AuthHandler struct {
@@ -65,7 +65,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 	session.Set("csrf_token", newToken)
 
-	session.Set("userID", user.ID)
+	session.Set("userID", int(user.ID))
 	if err := session.Save(); err != nil {
 		h.log.Error("Failed to save session", zap.Error(err))
 		c.Status(http.StatusInternalServerError)
@@ -97,11 +97,13 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	email := strings.TrimSpace(c.PostForm("email"))
 	password := c.PostForm("password")
 	confirmPassword := c.PostForm("confirmPassword")
+	firstName := strings.TrimSpace(c.PostForm("first_name"))
+	lastName := strings.TrimSpace(c.PostForm("last_name"))
 
 	// 1. Check for empty fields
-	if email == "" || password == "" {
+	if email == "" || password == "" || firstName == "" || lastName == "" {
 		c.Status(http.StatusBadRequest)
-		components.Alert("Email and password are required.", "error").Render(c, c.Writer)
+		components.Alert("All fields are required.", "error").Render(c, c.Writer)
 		return
 	}
 
@@ -129,7 +131,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 	// 5. Check if email already exists
 	_, err := repository.GetUserByEmail(c, email)
-	if err != sql.ErrNoRows {
+	if err != gorm.ErrRecordNotFound {
 		if err == nil {
 			h.log.Warn("Registration attempt with existing email", zap.String("email", email))
 			c.Status(http.StatusBadRequest)
@@ -142,7 +144,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	if _, err := repository.CreateUser(email, password); err != nil {
+	if _, err := repository.CreateUser(email, password, firstName, lastName); err != nil {
 		h.log.Error("Failed to create user", zap.Error(err))
 		c.Status(http.StatusInternalServerError)
 		components.Alert("Internal server error.", "error").Render(c, c.Writer)
@@ -164,7 +166,6 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 func (h *AuthHandler) Logout(c *gin.Context) {
 	session := sessions.Default(c)
-	//userID, _ := session.Get("userID").(int)
 	session.Clear()
 	session.Options(sessions.Options{Path: "/", MaxAge: -1})
 	if err := session.Save(); err != nil {

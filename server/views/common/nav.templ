@@ -12,7 +12,8 @@ templ Nav(isLoggedIn bool) {
 		</div>
 		<div class="flex items-center justify-end space-x-4">
 			if isLoggedIn {
-				@components.Button("Logout", "", "/logout", "#content", "", "secondary-button", "")
+				@components.Button("Profile", "/profile", "", "", "", "secondary-button", "")
+				@components.Button("Logout", "", "/logout", "#content", "", "primary-button", "")
 			} else {
 				@components.Button("Login", "/login", "", "", "", "secondary-button", "")
 			}

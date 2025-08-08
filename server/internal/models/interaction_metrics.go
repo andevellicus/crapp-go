@@ -1,7 +1,8 @@
-// server/internal/models/metrics.go
 package models
 
-import "time"
+import (
+	"gorm.io/gorm"
+)
 
 type MetricResult struct {
 	Value      float64 `json:"value"`
@@ -10,13 +11,13 @@ type MetricResult struct {
 }
 
 type AssessmentMetric struct {
-	ID           int
-	AssessmentID int
+	gorm.Model
+	AssessmentID uint
+	Assessment   AssessmentState `gorm:"foreignKey:AssessmentID"`
 	QuestionID   string
 	MetricKey    string
 	MetricValue  float64
 	SampleSize   int
-	CreatedAt    time.Time
 }
 
 type InteractionData struct {

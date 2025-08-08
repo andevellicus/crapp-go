@@ -36,6 +36,7 @@ function initDST(containerId, settings, onTestEnd) {
     let currentSequence = [];
     let displayIndex = 0;
     let timerRef = null;
+    let recallTimer = null; // Reference for the interval timer
     const testData = {
         testStartTime: 0,
         testEndTime: 0,
@@ -67,7 +68,9 @@ function initDST(containerId, settings, onTestEnd) {
         `;
 
         timerRef = setTimeout(() => {
-            container.querySelector('#dst-stimulus-display').textContent = '';
+            if(container.querySelector('#dst-stimulus-display')) {
+               container.querySelector('#dst-stimulus-display').textContent = '';
+            }
             displayIndex++;
             if (displayIndex < currentSequence.length) {
                 timerRef = setTimeout(presentDigit, interDigitInterval);
@@ -82,7 +85,7 @@ function initDST(containerId, settings, onTestEnd) {
         let remaining = recallTimeout;
 
         container.innerHTML = `
-            <div class="text-lg mb-4">Time Remaining: <span id="recall-timer">${(remaining/1000).toFixed(1)}s</span></div>
+            <div class="text-lg mb-4">Time Remaining: <span id="recall-timer">${Math.ceil(remaining/1000)}s</span></div>
             <p class="mb-2">Enter the sequence:</p>
             <input id="recall-input" type="text" inputmode="numeric" class="text-input text-2xl text-center" />
             <button id="submit-recall" class="primary-button mt-4">Submit</button>
@@ -95,21 +98,29 @@ function initDST(containerId, settings, onTestEnd) {
              handleRecallSubmit(input.value);
         };
         
-        const recallTimer = setInterval(() => {
+        recallTimer = setInterval(() => {
             remaining -= 1000;
             const timerEl = document.getElementById('recall-timer');
-            if (timerEl) timerEl.textContent = `${(remaining/1000).toFixed(1)}s`;
+            if (timerEl) {
+                // **THE FIX IS HERE:** Use Math.ceil and prevent negative numbers.
+                const secondsLeft = Math.ceil(remaining / 1000);
+                timerEl.textContent = `${Math.max(0, secondsLeft)}s`;
+            }
         }, 1000);
 
         timerRef = setTimeout(() => {
-            handleRecallSubmit(input.value);
+            if (phase === 'recalling') {
+                handleRecallSubmit(input.value);
+            }
         }, recallTimeout);
     }
 
     function handleRecallSubmit(userInput) {
         if (phase !== 'recalling') return;
-        clearTimeout(timerRef);
         phase = 'feedback';
+        clearTimeout(timerRef);
+        clearInterval(recallTimer); 
+        recallTimer = null; 
 
         const correct = userInput === currentSequence.join('');
         testData.results.push({ span: currentSpan, trial, sequence: currentSequence.join(''), input: userInput, correct, timestamp: performance.now() - testData.testStartTime });

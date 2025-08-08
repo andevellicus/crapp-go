@@ -34,7 +34,7 @@ func (h *AssessmentHandler) Start(c *gin.Context, isHTMX bool) {
 		return
 	}
 
-	state, err := repository.GetOrCreateAssessmentState(userID, len(h.Assessment.Questions))
+	state, err := repository.GetOrCreateAssessmentState(uint(userID), len(h.Assessment.Questions))
 	if err != nil {
 		h.log.Error("Error getting assessment state", zap.Error(err), zap.Int("userID", userID))
 		c.String(http.StatusInternalServerError, "Could not start or resume assessment")
@@ -82,7 +82,7 @@ func (h *AssessmentHandler) NextQuestion(c *gin.Context) {
 		return
 	}
 
-	state, err := repository.GetOrCreateAssessmentState(userID, len(h.Assessment.Questions))
+	state, err := repository.GetOrCreateAssessmentState(uint(userID), len(h.Assessment.Questions))
 	if err != nil {
 		h.log.Error("Could not get assessment state", zap.Error(err), zap.Int("userID", userID))
 		c.String(http.StatusInternalServerError, "Could not get assessment state")
@@ -152,7 +152,7 @@ func (h *AssessmentHandler) NextQuestion(c *gin.Context) {
 			views.AssessmentPage(currentQuestion, state.CurrentQuestionIndex, len(state.QuestionOrder), errorMessage, "", csrfToken.(string), cspNonce.(string)).Render(c, c.Writer)
 			return // Stop processing
 		}
-		if err := repository.SaveAnswer(state.ID, questionID, answer); err != nil {
+		if err := repository.SaveAnswer(uint(state.ID), questionID, answer); err != nil {
 			h.log.Error("Could not save answer", zap.Error(err), zap.Int("assessmentID", state.ID))
 			c.String(http.StatusInternalServerError, "Could not save answer")
 			return
@@ -161,10 +161,10 @@ func (h *AssessmentHandler) NextQuestion(c *gin.Context) {
 
 	// --- Advance to the next state ---
 	nextIndex := state.CurrentQuestionIndex + 1
-	repository.UpdateAssessmentIndex(state.ID, nextIndex)
+	repository.UpdateAssessmentIndex(uint(state.ID), nextIndex)
 
 	if nextIndex >= len(state.QuestionOrder) {
-		repository.CompleteAssessment(state.ID)
+		repository.CompleteAssessment(uint(state.ID))
 		c.Header("HX-Redirect", "/assessment/results")
 		c.AbortWithStatus(http.StatusOK)
 	} else {
@@ -194,7 +194,7 @@ func (h *AssessmentHandler) PreviousQuestion(c *gin.Context) {
 		return
 	}
 
-	state, err := repository.GetOrCreateAssessmentState(userID, len(h.Assessment.Questions))
+	state, err := repository.GetOrCreateAssessmentState(uint(userID), len(h.Assessment.Questions))
 	if err != nil {
 		h.log.Error("Could not get assessment state for prev", zap.Error(err), zap.Int("userID", userID))
 		c.String(http.StatusInternalServerError, "Could not get assessment state")
@@ -206,7 +206,7 @@ func (h *AssessmentHandler) PreviousQuestion(c *gin.Context) {
 		prevIndex = 0 // Safeguard
 	}
 
-	if err := repository.UpdateAssessmentIndex(state.ID, prevIndex); err != nil {
+	if err := repository.UpdateAssessmentIndex(uint(state.ID), prevIndex); err != nil {
 		h.log.Error("Could not update state for prev", zap.Error(err), zap.Int("assessmentID", state.ID))
 		c.String(http.StatusInternalServerError, "Could not update state")
 		return
@@ -247,7 +247,7 @@ func (h *AssessmentHandler) prepareSettingsJSON(question models.Question) string
 
 func processCPTData(data *metrics.CPTData, assessmentID int) (models.CPTResult, []models.CPTEvent) {
 	summary := models.CPTResult{
-		AssessmentID:        assessmentID,
+		AssessmentID:        uint(assessmentID),
 		CorrectDetections:   metrics.CountCorrectDetections(data),
 		CommissionErrors:    metrics.CountCommissionErrors(data),
 		OmissionErrors:      metrics.CountOmissionErrors(data),
@@ -256,7 +256,6 @@ func processCPTData(data *metrics.CPTData, assessmentID int) (models.CPTResult, 
 		DetectionRate:       metrics.CalculateDetectionRate(data),
 		OmissionErrorRate:   metrics.CalculateOmissionErrorRate(data),
 		CommissionErrorRate: metrics.CalculateCommissionErrorRate(data),
-		CreatedAt:           time.Now(),
 	}
 
 	var events []models.CPTEvent
@@ -286,7 +285,7 @@ func processCPTData(data *metrics.CPTData, assessmentID int) (models.CPTResult, 
 func processDSTData(data *metrics.DigitSpanRawData, assessmentID int) models.DSTResult {
 	processedResult, _ := metrics.CalculateDigitSpanMetrics(data)
 	return models.DSTResult{
-		AssessmentID:        assessmentID,
+		AssessmentID:        uint(assessmentID),
 		HighestSpanAchieved: processedResult.HighestSpanAchieved,
 		TotalTrials:         processedResult.TotalTrials,
 		CorrectTrials:       processedResult.CorrectTrials,
@@ -297,7 +296,7 @@ func processDSTData(data *metrics.DigitSpanRawData, assessmentID int) models.DST
 func processTMTData(data *metrics.TrailMakingData, assessmentID int) models.TMTResult {
 	processedResult := metrics.CalculateTrailMetrics(data)
 	return models.TMTResult{
-		AssessmentID:        assessmentID,
+		AssessmentID:        uint(assessmentID),
 		PartACompletionTime: processedResult.PartACompletionTime,
 		PartAErrors:         processedResult.PartAErrors,
 		PartBCompletionTime: processedResult.PartBCompletionTime,
