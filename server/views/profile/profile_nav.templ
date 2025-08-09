@@ -34,6 +34,22 @@ templ ProfileNav(activeSection string, isOobSwap bool) {
 			</a>
 		}
 
+		// Notifications Link
+		if activeSection == "notifications" {
+			<a href="/profile/notifications" class="primary-button w-full text-center">Notifications</a>
+		} else {
+			<a
+				href="/profile/notifications"
+				class="secondary-button w-full text-center"
+				hx-get="/profile/notifications"
+				hx-target="#profile-content"
+				hx-swap="innerHTML"
+				hx-push-url="true"
+			>
+				Notifications
+			</a>
+		}
+
 		// Danger Zone Link
 		if activeSection == "danger" {
 			<a href="/profile/danger" class="red-button w-full text-center">Delete Account</a>

@@ -18,6 +18,8 @@ templ Profile(user *models.User, csrfToken string, activeSection string) {
 							@profile.PersonalInfo(user, csrfToken)
 						case "password":
 							@profile.PasswordForm(csrfToken)
+						case "notifications":
+							@profile.NotificationsForm(user, csrfToken)
 						case "danger":
 							@profile.DangerZone(csrfToken)
 						default:

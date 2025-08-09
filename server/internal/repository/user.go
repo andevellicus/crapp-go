@@ -8,7 +8,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func CreateUser(email, password, firstName, lastName string) (*models.User, error) {
+func CreateUser(email, password, firstName, lastName, timezone string) (*models.User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -18,6 +18,7 @@ func CreateUser(email, password, firstName, lastName string) (*models.User, erro
 		Password:  string(hashedPassword),
 		FirstName: firstName,
 		LastName:  lastName,
+		TimeZone:  timezone, // Set the timezone on creation
 	}
 	result := database.DB.Create(user)
 	return user, result.Error

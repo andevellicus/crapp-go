@@ -1,6 +1,9 @@
 # .devcontainer/Dockerfile
 FROM golang:1.24.2-bookworm
 
+# Explicitly set the timezone to UTC to ensure consistent time for the scheduler
+ENV TZ="Etc/UTC"
+
 # Add user arguments, including one for the Docker GID
 ARG USERNAME=vscode
 ARG USER_UID=1001

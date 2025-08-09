@@ -99,6 +99,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	confirmPassword := c.PostForm("confirmPassword")
 	firstName := strings.TrimSpace(c.PostForm("first_name"))
 	lastName := strings.TrimSpace(c.PostForm("last_name"))
+	timezone := c.PostForm("timezone") // Get timezone from form
 
 	// 1. Check for empty fields
 	if email == "" || password == "" || firstName == "" || lastName == "" {
@@ -144,7 +145,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	if _, err := repository.CreateUser(email, password, firstName, lastName); err != nil {
+	if _, err := repository.CreateUser(email, password, firstName, lastName, timezone); err != nil {
 		h.log.Error("Failed to create user", zap.Error(err))
 		c.Status(http.StatusInternalServerError)
 		components.Alert("Internal server error.", "error").Render(c, c.Writer)

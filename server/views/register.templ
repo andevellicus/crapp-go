@@ -1,6 +1,7 @@
 package views
 
 import "crapp-go/views/components"
+import "crapp-go/internal/utils"
 
 templ Register(csrfToken string) {
 	@components.Panel() {
@@ -17,15 +18,22 @@ templ Register(csrfToken string) {
 				@components.FormField("first_name", "first_name", "First Name", "text", "", true)
 				@components.FormField("last_name", "last_name", "Last Name", "text", "", true)
 				@components.FormField("email", "email", "Email", "email", "", true)
-				<br />
+
+				<div class="mb-4">
+					<label for="timezone" class="block text-gray-700 text-sm font-bold mb-2">Timezone</label>
+					<select id="timezone" name="timezone" class="select-input" required>
+						for _, tz := range utils.GetTimeZones() {
+							<option value={ tz.Value }>{ tz.Label }</option>
+						}
+					</select>
+				</div>
+
 				<p class="text-sm text-gray-400 mt-1 mb-2">
 				Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.
-</p>
-				<br />			
+				</p>		
 
 				<div hx-target-400="#password-error-container">
 					@components.FormField("password", "password", "Password", "password", "", true)
-
 					<div id="password-error-container" class="min-h-[20px]"></div>
 				</div>
 

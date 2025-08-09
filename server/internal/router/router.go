@@ -148,6 +148,7 @@ func Setup(log *zap.Logger, assessment *models.Assessment) *gin.Engine {
 			// POST routes for form submissions remain the same
 			profileRoutes.POST("/update-info", userHandler.UpdateInfo)
 			profileRoutes.POST("/update-password", userHandler.UpdatePassword)
+			profileRoutes.POST("/update-notifications", userHandler.UpdateNotificationSettings)
 			profileRoutes.POST("/delete", userHandler.DeleteAccount)
 		}
 	}

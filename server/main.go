@@ -6,6 +6,7 @@ import (
 	logger "crapp-go/internal/logging"
 	"crapp-go/internal/models"
 	"crapp-go/internal/router"
+	"crapp-go/internal/services"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -44,6 +45,11 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to load assessment", zap.Error(err))
 	}
+
+	// Initialize Services
+	emailService := services.NewEmailService(log)
+	scheduler := services.NewScheduler(log, emailService)
+	scheduler.Start() // Start the reminder scheduler
 
 	// Setup router, passing the logger to it
 	r := router.Setup(log, assessment)

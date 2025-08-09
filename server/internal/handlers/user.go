@@ -1,4 +1,3 @@
-// server/internal/handlers/user.go
 package handlers
 
 import (
@@ -7,7 +6,9 @@ import (
 	"crapp-go/views"
 	"crapp-go/views/components"
 	"crapp-go/views/profile"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/a-h/templ"
 	"github.com/gin-gonic/gin"
@@ -30,36 +31,39 @@ func (h *UserHandler) ShowProfilePage(c *gin.Context) {
 		return
 	}
 
+	userModel := user.(*models.User)
 	csrfToken, _ := c.Get("csrf_token")
 	cspNonce, _ := c.Get("csp_nonce")
 	isHTMX := c.GetHeader("HX-Request") == "true"
-
 	activeSection := c.Param("section")
 	if activeSection == "" {
 		activeSection = "personal"
 	}
 
-	// This is the key: we check which element the HTMX request is targeting.
-	// The profile nav targets "#profile-content", so the header value will be "profile-content".
-	hxTarget := c.GetHeader("HX-Target")
+	userForView := *userModel
+	if userModel.TimeZone != "" && userModel.ReminderTime != "" {
+		loc, err := time.LoadLocation(userModel.TimeZone)
+		if err == nil {
+			utcTime, err := time.Parse("15:04", userModel.ReminderTime)
+			if err == nil {
+				now := time.Now().UTC()
+				userReminderInUTC := time.Date(now.Year(), now.Month(), now.Day(), utcTime.Hour(), utcTime.Minute(), 0, 0, time.UTC)
+				localReminderTime := userReminderInUTC.In(loc)
+				userForView.ReminderTime = localReminderTime.Format("15:04")
+			}
+		}
+	}
 
-	// Case 1: An HTMX request to swap ONLY the inner content.
-	// This happens when clicking links inside the profile nav menu.
+	hxTarget := c.GetHeader("HX-Target")
 	if isHTMX && hxTarget == "profile-content" {
-		// Instead of rendering just one part, render the multi-swap component.
-		profile.ProfileUpdate(user.(*models.User), csrfToken.(string), activeSection).Render(c.Request.Context(), c.Writer)
+		profile.ProfileUpdate(&userForView, csrfToken.(string), activeSection).Render(c.Request.Context(), c.Writer)
 		return
 	}
 
-	// Case 2: A full page load OR the initial HTMX request from the main navigation.
-	// Both of these need to render the entire profile component shell.
-	profileComponent := views.Profile(user.(*models.User), csrfToken.(string), activeSection)
-
+	profileComponent := views.Profile(&userForView, csrfToken.(string), activeSection)
 	if isHTMX {
-		// This is the initial HTMX request from the main nav (which targets #content)
 		profileComponent.Render(c.Request.Context(), c.Writer)
 	} else {
-		// This is a full browser page load or refresh
 		views.Layout("Profile", true, csrfToken.(string), cspNonce.(string)).Render(
 			templ.WithChildren(c.Request.Context(), profileComponent),
 			c.Writer,
@@ -74,7 +78,7 @@ func (h *UserHandler) UpdateInfo(c *gin.Context) {
 	lastName := c.PostForm("last_name")
 
 	if err := repository.UpdateUser(c, userID, firstName, lastName); err != nil {
-		h.log.Error("Failed to update user info", zap.Error(err), zap.Int("userID", int(userID)))
+		h.log.Error("Failed to update user info", zap.Error(err), zap.Uint("userID", userID))
 		components.Alert("Failed to update profile", "error").Render(c, c.Writer)
 		return
 	}
@@ -92,18 +96,56 @@ func (h *UserHandler) UpdatePassword(c *gin.Context) {
 		components.Alert("Incorrect current password", "error").Render(c, c.Writer)
 		return
 	}
-
 	if newPassword != confirmPassword {
 		components.Alert("New passwords do not match", "error").Render(c, c.Writer)
 		return
 	}
-
 	if err := repository.UpdateUserPassword(c, currentUser.ID, newPassword); err != nil {
-		h.log.Error("Failed to update password", zap.Error(err), zap.Int("userID", int(currentUser.ID)))
+		h.log.Error("Failed to update password", zap.Error(err), zap.Uint("userID", currentUser.ID))
 		components.Alert("Failed to update password", "error").Render(c, c.Writer)
 		return
 	}
 	components.Alert("Password updated successfully", "success").Render(c, c.Writer)
+}
+
+func (h *UserHandler) UpdateNotificationSettings(c *gin.Context) {
+	user, _ := c.Get("user")
+	userID := user.(*models.User).ID
+
+	enabled := c.PostForm("enable_email_notifications") == "on"
+	localReminderTime := c.PostForm("reminder_time")
+	userTimezone := c.PostForm("timezone")
+	if userTimezone == "" {
+		userTimezone = "UTC"
+	}
+
+	loc, err := time.LoadLocation(userTimezone)
+	if err != nil {
+		h.log.Error("Invalid timezone identifier", zap.Error(err), zap.String("timezone", userTimezone))
+		components.Alert("Invalid timezone provided by your browser.", "error").Render(c, c.Writer)
+		return
+	}
+
+	// Combine the current date with the user's selected time.
+	// This provides the context needed to correctly determine if DST is active.
+	now := time.Now()
+	dateTimeString := fmt.Sprintf("%s %s", now.Format("2006-01-02"), localReminderTime)
+
+	// Parse the full date and time string in the user's local timezone.
+	parsedTime, err := time.ParseInLocation("2006-01-02 15:04", dateTimeString, loc)
+	if err != nil {
+		components.Alert("Invalid time format. Please use HH:MM.", "error").Render(c, c.Writer)
+		return
+	}
+
+	// Convert to UTC and format for storage.
+	utcReminderTime := parsedTime.UTC().Format("15:04")
+	if err := repository.UpdateNotificationPreferences(userID, enabled, utcReminderTime, userTimezone); err != nil {
+		h.log.Error("Failed to update notification preferences", zap.Error(err), zap.Uint("userID", userID))
+		components.Alert("Failed to save notification settings.", "error").Render(c, c.Writer)
+		return
+	}
+	components.Alert("Notification settings saved successfully!", "success").Render(c, c.Writer)
 }
 
 func (h *UserHandler) DeleteAccount(c *gin.Context) {
@@ -111,22 +153,18 @@ func (h *UserHandler) DeleteAccount(c *gin.Context) {
 	currentUser := user.(*models.User)
 	password := c.PostForm("password")
 	confirmation := c.PostForm("confirmation")
-
 	if confirmation != "DELETE" {
 		components.Alert("Please type DELETE to confirm.", "error").Render(c, c.Writer)
 		return
 	}
-
 	if !currentUser.CheckPassword(password) {
 		components.Alert("Incorrect password.", "error").Render(c, c.Writer)
 		return
 	}
-
 	if err := repository.DeleteUser(c, currentUser.ID); err != nil {
-		h.log.Error("Failed to delete account", zap.Error(err), zap.Int("userID", int(currentUser.ID)))
+		h.log.Error("Failed to delete account", zap.Error(err), zap.Uint("userID", currentUser.ID))
 		components.Alert("Failed to delete account.", "error").Render(c, c.Writer)
 		return
 	}
-
 	c.Header("HX-Redirect", "/")
 }
